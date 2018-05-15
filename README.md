@@ -40,25 +40,23 @@ test your code :
         person.setEmail("person@mail.com");
         person.setCars(Arrays.asList(new Car[] {car}));
         repository.save(person);
-        Optional<Person> retreivedEmployee = repository.findById(person.getId().toString());
-        assertFalse(retreivedEmployee.get().getCars().isEmpty());
-        assertTrue(retreivedEmployee.get().getCars().get(0).getColor().equals(Color.BLUE));
+        Optional<Person> retreivedPerson = repository.findById(person.getId().toString());
+        assertFalse(retreivedPerson.get().getCars().isEmpty());
+        assertTrue(retreivedPerson.get().getCars().get(0).getColor().equals(Color.BLUE));
         
 ```
 
 database layout when executing this test :
 - cars collection :
-``` 
-
+```javascript 
 {
     _id : ObjectId(5afaff0e2557db3a140d0f85),
     manufacturer : BMW,
     color : BLUE
 }
-
 ``` 
 - persons collection
-``` 
+```javascript 
   {
     _id : ObjectId(5afaff0e2557db3a140d0f86),
     name : person,
@@ -69,7 +67,6 @@ database layout when executing this test :
         }
     ]
 }
-
 ``` 
 # Strengths
 - [x] Based on [Spring framework and derivatives](https://spring.io/)
