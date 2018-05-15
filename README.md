@@ -51,21 +51,21 @@ database layout when executing this test :
 ``` 
 
 {
-    "_id" : ObjectId("5afaff0e2557db3a140d0f85"),
-    "manufacturer" : "BMW",
-    "color" : "BLUE"
+    _id : ObjectId(5afaff0e2557db3a140d0f85),
+    manufacturer : BMW,
+    color : BLUE
 }
 
 ``` 
 - persons collection
 ``` 
   {
-    "_id" : ObjectId("5afaff0e2557db3a140d0f86"),
-    "name" : "Dave",
-    "email" : "person@mail.com",
-    "cars" : [ 
+    _id : ObjectId(5afaff0e2557db3a140d0f86),
+    name : person,
+    email : person@mail.com,
+    cars : [ 
         {
-            "_id" : ObjectId("5afaff0e2557db3a140d0f85")
+            _id : ObjectId(5afaff0e2557db3a140d0f85)
         }
     ]
 }
