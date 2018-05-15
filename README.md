@@ -1,4 +1,5 @@
 # RelMongo
+[![][license img]][license]<br>
 RelMongo (Relational Mongo) allows to use relations between mongodb collections in a JPA way <br>
 RelMongo is based on Spring Data Mongo framework.
 
@@ -21,9 +22,11 @@ on your Person mongo entity simply add the following annotations from RelMongo :
     private List<Car> cars;
 ```
 and on your Spring App config class simply add @EnableRelationalMongo annotation:
-``` ... Other Annotations
+``` 
+    ... Other Annotations
     @EnableRelationalMongo
     public Class AppConfig
+    
 ```
 # Strengths
 - [x] Based on [Spring framework and derivatives](https://spring.io/)
@@ -50,3 +53,6 @@ a design or technical choice problems.
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License.
+
+[license]:LICENSE-2.0.txt
+[license img]:https://img.shields.io/badge/License-Apache%202-blue.svg
