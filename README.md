@@ -28,14 +28,58 @@ and on your Spring App config class simply add @EnableRelationalMongo annotation
     public Class AppConfig
     
 ```
+test your code :
+``` 
+        Car car = new Car();
+        car.setColor(Color.BLUE);
+        String manufacturer = "BMW";
+        car.setManufacturer(manufacturer);
+        carRepository.save(car);
+        Person person = new Person();
+        person.setName("person");
+        person.setEmail("person@mail.com");
+        person.setCars(Arrays.asList(new Car[] {car}));
+        repository.save(person);
+        Optional<Person> retreivedEmployee = repository.findById(person.getId().toString());
+        assertFalse(retreivedEmployee.get().getCars().isEmpty());
+        assertTrue(retreivedEmployee.get().getCars().get(0).getColor().equals(Color.BLUE));
+        
+```
+
+database layout when executing this test :
+- cars collection :
+``` 
+
+{
+    "_id" : ObjectId("5afaff0e2557db3a140d0f85"),
+    "manufacturer" : "BMW",
+    "color" : "BLUE"
+}
+
+``` 
+- persons collection
+``` 
+  {
+    "_id" : ObjectId("5afaff0e2557db3a140d0f86"),
+    "name" : "Dave",
+    "email" : "person@mail.com",
+    "cars" : [ 
+        {
+            "_id" : ObjectId("5afaff0e2557db3a140d0f85")
+        }
+    ]
+}
+
+``` 
 # Strengths
 - [x] Based on [Spring framework and derivatives](https://spring.io/)
 - [x] Simple to use
 - [x] The lazy loading is done in a bulk way so no N+1 problems
 # Notes
-- RelMongo may be an alternative for DBREF.
+- RelMongo may be an alternative for DBREF which allow to use $lookup querries in mongodb while it is not possible with DBREF.
 - [MongoDB](https://www.mongodb.com/) is a document oriented database and is not suitable for relations, if you are using relations massively you may have
 a design or technical choice problems.
+- RelMongo does not garantee integrity in the database since it is not implemented by MongoDB
 
 
 # LICENSE
