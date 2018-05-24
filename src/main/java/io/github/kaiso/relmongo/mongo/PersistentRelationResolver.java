@@ -14,17 +14,18 @@
 *  limitations under the License.
 */
 
-package io.github.kaiso.relmongo;
+package io.github.kaiso.relmongo.mongo;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 import io.github.kaiso.relmongo.annotation.FetchType;
-import io.github.kaiso.relmongo.lazy.LazyLoadingCallback;
 import io.github.kaiso.relmongo.lazy.LazyLoadingProxy;
-import io.github.kaiso.relmongo.mongo.DatabaseLoader;
+import io.github.kaiso.relmongo.lazy.RelMongoLazyLoader;
+import io.github.kaiso.relmongo.model.LoadableObjectsMetadata;
 
+import org.bson.types.ObjectId;
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.cglib.proxy.Factory;
 import org.springframework.cglib.proxy.NoOp;
@@ -33,8 +34,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.objenesis.ObjenesisStd;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 public final class PersistentRelationResolver {
@@ -45,16 +44,26 @@ public final class PersistentRelationResolver {
         super();
     }
 
-    public static void resolveOnLoading(MongoOperations mongoOperations,
-            Map<Entry<Class<?>, FetchType>, Entry<Object, String>> loadableObjects, DBObject source) {
-        for (Entry<Entry<Class<?>, FetchType>, Entry<Object, String>> relation : loadableObjects.entrySet()) {
-            Object ids = relation.getValue().getKey();
-            if (ids instanceof BasicDBList && hasToLoad((BasicDBList) ids, relation.getKey().getValue())) {
-                List<Object> identifierList = ((BasicDBList) ids).stream()
-                        .map(PersistentRelationResolver::mapIdentifier).collect(Collectors.toList());
-                String collection = relation.getKey().getKey().getAnnotation(Document.class).collection();
-                source.put(relation.getValue().getValue(),
-                        DatabaseLoader.getDocumentsById(mongoOperations, identifierList, collection));
+    public static void resolveOnLoading(MongoOperations mongoOperations, List<LoadableObjectsMetadata> loadableObjects, DBObject source) {
+        for (LoadableObjectsMetadata relation : loadableObjects) {
+            String collection = relation.getTargetAssociationClass().getAnnotation(Document.class).collection();
+            if (relation.getObjectIds() instanceof BasicDBList && hasToLoad((BasicDBList) relation.getObjectIds())) {
+                if (FetchType.EAGER.equals(relation.getFetchType())) {
+                    List<Object> identifierList = ((BasicDBList) relation.getObjectIds()).stream().map(PersistentRelationResolver::mapIdentifier)
+                            .collect(Collectors.toList());
+                    source.put(relation.getFieldName(), DatabaseLoader.getDocumentsById(mongoOperations, identifierList, collection));
+                } else {
+                    source.put(relation.getFieldName(), relation.getObjectIds());
+                }
+            } else if (relation.getObjectIds() instanceof ObjectId) {
+                if (FetchType.EAGER.equals(relation.getFetchType())) {
+                    source.put(relation.getFieldName(), DatabaseLoader.getDocumentByPropertyValue(mongoOperations, relation.getObjectIds(),
+                            relation.getReferencedPropertyName(), collection));
+                } else {
+                    BasicDBObject object = new BasicDBObject();
+                    object.put("_id", relation.getObjectIds());
+                    source.put(relation.getFieldName(), object);
+                }
             }
         }
 
@@ -65,7 +74,7 @@ public final class PersistentRelationResolver {
             return null;
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(original.getClass());
-        LazyLoadingCallback lazyLoader = new LazyLoadingCallback(original, mongoOperations);
+        RelMongoLazyLoader lazyLoader = new RelMongoLazyLoader(original, mongoOperations);
         enhancer.setCallback(lazyLoader);
         enhancer.setInterfaces(new Class[] { LazyLoadingProxy.class, type.isInterface() ? type : NoOp.class });
         enhancer.create();
@@ -74,10 +83,10 @@ public final class PersistentRelationResolver {
         return factory.newInstance(lazyLoader);
     }
 
-    private static boolean hasToLoad(BasicDBList objects, FetchType fetchType) {
+    private static boolean hasToLoad(BasicDBList objects) {
         // the last contition verifies if the objects were already laoded by another
         // query
-        return FetchType.EAGER.equals(fetchType) && !objects.isEmpty() && ((BasicDBObject) objects.get(0)).size() <= 1;
+        return !objects.isEmpty() && ((BasicDBObject) objects.get(0)).size() <= 1;
     }
 
     public static Object mapIdentifier(Object object) {

@@ -26,5 +26,4 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface JoinProperty {
     String  name() default "";
-    String  referencedPropertyName() default "_id";
 }

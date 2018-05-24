@@ -14,7 +14,7 @@
 *  limitations under the License.
 */
 
-package io.github.kaiso.relmongo;
+package io.github.kaiso.relmongo.events.callback;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -22,6 +22,7 @@ import com.mongodb.DBObject;
 
 import io.github.kaiso.relmongo.annotation.JoinProperty;
 import io.github.kaiso.relmongo.annotation.OneToMany;
+import io.github.kaiso.relmongo.annotation.OneToOne;
 
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
@@ -40,33 +41,34 @@ public class PersistentPropertySavingCallback implements FieldCallback {
 
     public void doWith(Field field) throws IllegalAccessException {
         ReflectionUtils.makeAccessible(field);
-
-        if (field.isAnnotationPresent(OneToMany.class)) {
-            String name = "";
-            String referencedPropertyName = "";
-            try {
-                name = field.getAnnotation(JoinProperty.class).name();
-                referencedPropertyName = field.getAnnotation(JoinProperty.class).referencedPropertyName();
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Missing or misconfigured @JoinProperty annotation", e);
-            }
-            if (!"_id".equals(referencedPropertyName)) {
-                throw new IllegalArgumentException("in @OneToMany, referencedPropertyName must be allways _id ");
-            }
-            Object ids = null;
-            try {
-                ids = ((BasicDBObject) source).get(name);
-                if (ids instanceof BasicDBList) {
-                    BasicDBList list = new BasicDBList();
-                    list.addAll(((BasicDBList) ids).stream().map(this::keepOnlyIdentifier).collect(Collectors.toList()));
-                    ((BasicDBObject) source).put(name,list);
-                }
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Property defined in @JoinProperty annotation is not present", e);
-            }
-
+        if (field.isAnnotationPresent(OneToMany.class) || field.isAnnotationPresent(OneToOne.class)) {
+            saveAssociation(field);
         }
 
+    }
+
+    private void saveAssociation(Field field) {
+        String name = "";
+        try {
+            name = field.getAnnotation(JoinProperty.class).name();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Missing or misconfigured @JoinProperty annotation", e);
+        }
+        Object reference = null;
+        try {
+            reference = ((BasicDBObject) source).get(field.getName());
+            if (reference instanceof BasicDBList) {
+                BasicDBList list = new BasicDBList();
+                list.addAll(((BasicDBList) reference).stream().map(this::keepOnlyIdentifier).collect(Collectors.toList()));
+                ((BasicDBObject) source).remove(field.getName());
+                ((BasicDBObject) source).put(name, list);
+            } else if (reference instanceof BasicDBObject) {
+                ((BasicDBObject) source).remove(field.getName());
+                ((BasicDBObject) source).put(name, ((BasicDBObject) reference).get("_id"));
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Property defined in @JoinProperty annotation is not present", e);
+        }
     }
 
     private BasicDBObject keepOnlyIdentifier(Object obj) {

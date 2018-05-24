@@ -14,9 +14,13 @@
 *  limitations under the License.
 */
 
-package io.github.kaiso.relmongo;
+package io.github.kaiso.relmongo.events.listener;
 
-import io.github.kaiso.relmongo.annotation.FetchType;
+import io.github.kaiso.relmongo.events.callback.PersistentPropertyLazyLoadingCallback;
+import io.github.kaiso.relmongo.events.callback.PersistentPropertyLoadingCallback;
+import io.github.kaiso.relmongo.events.callback.PersistentPropertySavingCallback;
+import io.github.kaiso.relmongo.model.LoadableObjectsMetadata;
+import io.github.kaiso.relmongo.mongo.PersistentRelationResolver;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
@@ -26,8 +30,7 @@ import org.springframework.data.mongodb.core.mapping.event.AfterLoadEvent;
 import org.springframework.data.mongodb.core.mapping.event.BeforeSaveEvent;
 import org.springframework.util.ReflectionUtils;
 
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.List;
 
 public class MongoEventListener extends AbstractMongoEventListener<Object> {
 
@@ -38,7 +41,7 @@ public class MongoEventListener extends AbstractMongoEventListener<Object> {
     public void onAfterLoad(AfterLoadEvent<Object> event) {
         PersistentPropertyLoadingCallback callback = new PersistentPropertyLoadingCallback(event.getSource());
         ReflectionUtils.doWithFields(event.getType(), callback);
-        Map<Entry<Class<?>, FetchType>, Entry<Object, String>> loadableObjects = callback.getLoadableObjects();
+        List<LoadableObjectsMetadata> loadableObjects = callback.getLoadableObjects();
         if(!loadableObjects.isEmpty()) {
             PersistentRelationResolver.resolveOnLoading(mongoOperations, loadableObjects, event.getSource());
         }
