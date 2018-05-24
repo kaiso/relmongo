@@ -23,7 +23,8 @@ import java.lang.annotation.Target;
 
 
 /**
- * Describes Unidirectional OneToMany relation
+ * Describes Unidirectional OneToMany relation <br>
+ * The referenced property for this association in the target object is allways the "_id"
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

@@ -11,17 +11,16 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class LazyLoadingCallback implements LazyLoader {
+public class RelMongoLazyLoader implements LazyLoader {
 
     private Object original;
     private MongoOperations mongoOperations;
 
-    public LazyLoadingCallback(Object original, MongoOperations mongoOperations) {
+    public RelMongoLazyLoader(Object original, MongoOperations mongoOperations) {
         super();
         this.original = original;
         this.mongoOperations = mongoOperations;
@@ -30,15 +29,18 @@ public class LazyLoadingCallback implements LazyLoader {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Object loadObject() throws Exception {
-
-        if (Collection.class.isAssignableFrom(original.getClass()) && !(original instanceof LazyLoadingProxy)) {
-            List<ObjectId> idlist = (List<ObjectId>) ((Collection) original).stream().map(this::getIdFromObject).collect(Collectors.toList());
-            if (!idlist.isEmpty()) {
-                return DatabaseLoader.findByIds(mongoOperations, ((Collection) original).iterator().next().getClass(),
-                        idlist.toArray(new ObjectId[idlist.size()]));
+        if (!(original instanceof LazyLoadingProxy)) {
+            if (Collection.class.isAssignableFrom(original.getClass())) {
+                List<ObjectId> idlist = (List<ObjectId>) ((Collection) original).stream().map(this::getIdFromObject).collect(Collectors.toList());
+                if (!idlist.isEmpty()) {
+                    return DatabaseLoader.findByIds(mongoOperations, ((Collection) original).iterator().next().getClass(),
+                            idlist.toArray(new ObjectId[idlist.size()]));
+                }
+            } else {
+                return DatabaseLoader.findByPropertyValue(mongoOperations, original.getClass(), "_id", getIdFromObject(original));
             }
         }
-        return Collections.emptyList();
+        return null;
     }
 
     private ObjectId getIdFromObject(Object obj) {
@@ -60,7 +62,7 @@ public class LazyLoadingCallback implements LazyLoader {
         }
 
         @Override
-        public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+        public void doWith(Field field) throws IllegalAccessException {
             if (field.isAnnotationPresent(Id.class)) {
                 ReflectionUtils.makeAccessible(field);
                 try {

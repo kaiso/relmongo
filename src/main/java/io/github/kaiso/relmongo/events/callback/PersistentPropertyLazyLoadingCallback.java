@@ -14,11 +14,13 @@
 *  limitations under the License.
 */
 
-package io.github.kaiso.relmongo;
+package io.github.kaiso.relmongo.events.callback;
 
 import io.github.kaiso.relmongo.annotation.FetchType;
 import io.github.kaiso.relmongo.annotation.JoinProperty;
 import io.github.kaiso.relmongo.annotation.OneToMany;
+import io.github.kaiso.relmongo.annotation.OneToOne;
+import io.github.kaiso.relmongo.mongo.PersistentRelationResolver;
 
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.util.ReflectionUtils;
@@ -41,21 +43,17 @@ public class PersistentPropertyLazyLoadingCallback implements FieldCallback {
     public void doWith(Field field) throws IllegalAccessException {
         ReflectionUtils.makeAccessible(field);
 
-        if (field.isAnnotationPresent(OneToMany.class)&& FetchType.LAZY.equals(field.getAnnotation(OneToMany.class).fetch())) {
-            String referencedPropertyName = "";
+        if ((field.isAnnotationPresent(OneToMany.class) && FetchType.LAZY.equals(field.getAnnotation(OneToMany.class).fetch()))
+                || (field.isAnnotationPresent(OneToOne.class) && FetchType.LAZY.equals(field.getAnnotation(OneToOne.class).fetch()))) {
             try {
-                referencedPropertyName = field.getAnnotation(JoinProperty.class).referencedPropertyName();
+                field.getAnnotation(JoinProperty.class).name();
             } catch (Exception e) {
                 throw new IllegalArgumentException("Missing or misconfigured @JoinProperty annotation", e);
             }
-            if (!"_id".equals(referencedPropertyName)) {
-                throw new IllegalArgumentException("in @OneToMany, referencedPropertyName must be allways _id ");
+            if (field.isAnnotationPresent(OneToMany.class) && !Collection.class.isAssignableFrom(field.getType())) {
+                throw new IllegalArgumentException("in @OneToMany, the field must be of type collection ");
             }
-            if (!Collection.class.isAssignableFrom(field.getType())) {
-                throw new IllegalArgumentException("in @OneToMany, the field must be of type collection "); 
-            }
-            
-          field.set(source, PersistentRelationResolver.lazyLoader(field.getType(), field.get(source), mongoOperations));
+            field.set(source, PersistentRelationResolver.lazyLoader(field.getType(), field.get(source), mongoOperations));
 
         }
 

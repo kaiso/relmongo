@@ -3,25 +3,34 @@ package io.github.kaiso.relmongo.data.model;
 import io.github.kaiso.relmongo.annotation.FetchType;
 import io.github.kaiso.relmongo.annotation.JoinProperty;
 import io.github.kaiso.relmongo.annotation.OneToMany;
+import io.github.kaiso.relmongo.annotation.OneToOne;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
-@Document(collection = "employees")
+@Document(collection = "people")
 public class Person {
     private ObjectId id;
     private String name;
     private String email;
     
     @OneToMany(fetch=FetchType.EAGER)
-    @JoinProperty(name="cars")
+    @JoinProperty(name="cars_ids")
     private List<Car> cars;
     
     @OneToMany(fetch=FetchType.LAZY)
-    @JoinProperty(name="houses")
+    @JoinProperty(name="houses_ids")
     private List<House> houses;
+    
+    @OneToOne(fetch=FetchType.EAGER)
+    @JoinProperty(name = "passportId")
+    private Passport passport;
+    
+    @OneToOne(fetch=FetchType.LAZY)
+    @JoinProperty(name = "drivingLicenseId")
+    private DrivingLicense drivingLicense;
     
     public String getName() {
         return name;
@@ -52,6 +61,18 @@ public class Person {
     }
     public void setHouses(List<House> houses) {
         this.houses = houses;
+    }
+    public Passport getPassport() {
+        return passport;
+    }
+    public void setPassport(Passport passport) {
+        this.passport = passport;
+    }
+    public DrivingLicense getDrivingLicense() {
+        return drivingLicense;
+    }
+    public void setDrivingLicense(DrivingLicense drivingLicense) {
+        this.drivingLicense = drivingLicense;
     }
     
     

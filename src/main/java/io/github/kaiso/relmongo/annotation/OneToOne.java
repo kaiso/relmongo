@@ -1,4 +1,3 @@
-
 /**
 *   Copyright 2018 Kais OMRI and authors.
 *
@@ -15,19 +14,20 @@
 *  limitations under the License.
 */
 
-package io.github.kaiso.relmongo.config;
+package io.github.kaiso.relmongo.annotation;
 
-import io.github.kaiso.relmongo.events.listener.MongoEventListener;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-@Configuration
-public class PersistenceConfiguration {
-
-    @Bean
-    public MongoEventListener mongoEventListener() {
-        return new MongoEventListener();
-    }
-
+/**
+ * Describes Unidirectional OneToOne relation
+ * The referenced property for this association in the target object is allways the "_id"
+ *
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface OneToOne {
+    FetchType fetch() default FetchType.LAZY;
 }
