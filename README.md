@@ -1,6 +1,7 @@
 # RelMongo
 [![][license img]][license]
-[![][maven img]][maven]<br>
+[![][maven img]][maven]
+[![][build img]][build]<br>
 RelMongo (Relational Mongo) allows to use relations between mongodb collections in a JPA way <br>
 RelMongo is based on Spring Data Mongo framework.
 # Features
@@ -117,4 +118,7 @@ a design or technical choice problems.
 [license img]:https://img.shields.io/badge/License-Apache%202-blue.svg
 [maven]:http://search.maven.org/#search|gav|1|g:"io.github.kaiso.relmongo"%20AND%20a:"relmongo"
 [maven img]:https://maven-badges.herokuapp.com/maven-central/io.github.kaiso.relmongo/relmongo/badge.svg
+[build]:https://travis-ci.org/kaiso/relmongo
+[build img]:https://travis-ci.org/kaiso/relmongo.svg?branch=master
+
 
