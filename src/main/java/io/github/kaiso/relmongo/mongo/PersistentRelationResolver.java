@@ -24,6 +24,7 @@ import io.github.kaiso.relmongo.annotation.FetchType;
 import io.github.kaiso.relmongo.lazy.LazyLoadingProxy;
 import io.github.kaiso.relmongo.lazy.RelMongoLazyLoader;
 import io.github.kaiso.relmongo.model.LoadableObjectsMetadata;
+import io.github.kaiso.relmongo.util.RelMongoConstants;
 
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.cglib.proxy.Factory;
@@ -83,7 +84,21 @@ public final class PersistentRelationResolver {
     private static boolean hasToLoad(BasicDBList objects) {
         // the last contition verifies if the objects were already laoded by another
         // query
-        return !objects.isEmpty() && ((BasicDBObject) objects.get(0)).size() <= 1;
+        if (objects.isEmpty())
+            return false;
+        BasicDBObject basicDBObject = (BasicDBObject) objects.get(0);
+        return hasToLoad(basicDBObject);
+    }
+
+    /**
+     * checks if an object is already populated to be loaded anther time or not
+     * 
+     * @param basicDBObject
+     * @return
+     */
+    private static boolean hasToLoad(BasicDBObject basicDBObject) {
+        int propscount = basicDBObject.get(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME) == null ? 1 : 2;
+        return basicDBObject.size() <= propscount;
     }
 
     public static Object mapIdentifier(Object object) {
