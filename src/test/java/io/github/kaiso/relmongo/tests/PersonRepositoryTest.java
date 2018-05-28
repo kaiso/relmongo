@@ -1,5 +1,6 @@
 package io.github.kaiso.relmongo.tests;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 import io.github.kaiso.relmongo.data.model.Car;
@@ -101,7 +102,9 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         assertNull(personNoRelational.get("passport"));
         System.out.println("db id" + personNoRelational.get("passportId"));
         System.out.println("relational id" + passport.getId());
-        assertEquals(personNoRelational.get("passportId"), passport.getId());
+        BasicDBObject obj = new BasicDBObject();
+        obj.put("_id", passport.getId());
+        assertEquals(personNoRelational.get("passportref"), obj);
     }
 
     @Test

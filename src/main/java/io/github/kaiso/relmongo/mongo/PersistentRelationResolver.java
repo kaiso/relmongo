@@ -25,7 +25,6 @@ import io.github.kaiso.relmongo.lazy.LazyLoadingProxy;
 import io.github.kaiso.relmongo.lazy.RelMongoLazyLoader;
 import io.github.kaiso.relmongo.model.LoadableObjectsMetadata;
 
-import org.bson.types.ObjectId;
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.cglib.proxy.Factory;
 import org.springframework.cglib.proxy.NoOp;
@@ -55,14 +54,12 @@ public final class PersistentRelationResolver {
                 } else {
                     source.put(relation.getFieldName(), relation.getObjectIds());
                 }
-            } else if (relation.getObjectIds() instanceof ObjectId) {
+            } else if (relation.getObjectIds() instanceof BasicDBObject) {
                 if (FetchType.EAGER.equals(relation.getFetchType())) {
-                    source.put(relation.getFieldName(), DatabaseLoader.getDocumentByPropertyValue(mongoOperations, relation.getObjectIds(),
+                    source.put(relation.getFieldName(), DatabaseLoader.getDocumentByPropertyValue(mongoOperations, mapIdentifier(relation.getObjectIds()),
                             relation.getReferencedPropertyName(), collection));
                 } else {
-                    BasicDBObject object = new BasicDBObject();
-                    object.put("_id", relation.getObjectIds());
-                    source.put(relation.getFieldName(), object);
+                    source.put(relation.getFieldName(), relation.getObjectIds());
                 }
             }
         }
