@@ -23,7 +23,10 @@ import com.mongodb.DBObject;
 import io.github.kaiso.relmongo.annotation.JoinProperty;
 import io.github.kaiso.relmongo.annotation.OneToMany;
 import io.github.kaiso.relmongo.annotation.OneToOne;
+import io.github.kaiso.relmongo.util.ReflectionsUtil;
+import io.github.kaiso.relmongo.util.RelMongoConstants;
 
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
@@ -57,22 +60,27 @@ public class PersistentPropertySavingCallback implements FieldCallback {
         Object reference = null;
         try {
             reference = ((BasicDBObject) source).get(field.getName());
+            String collection = getCollectionName(field);
             if (reference instanceof BasicDBList) {
                 BasicDBList list = new BasicDBList();
-                list.addAll(((BasicDBList) reference).stream().map(this::keepOnlyIdentifier).collect(Collectors.toList()));
+                list.addAll(((BasicDBList) reference).stream().map(dbObject -> this.keepOnlyIdentifier(dbObject, collection)).collect(Collectors.toList()));
                 ((BasicDBObject) source).remove(field.getName());
                 ((BasicDBObject) source).put(name, list);
             } else if (reference instanceof BasicDBObject) {
                 ((BasicDBObject) source).remove(field.getName());
-                ((BasicDBObject) source).put(name, this.keepOnlyIdentifier(reference));
+                ((BasicDBObject) source).put(name, this.keepOnlyIdentifier(reference, collection));
             }
         } catch (Exception e) {
             throw new IllegalArgumentException("Property defined in @JoinProperty annotation is not present", e);
         }
     }
 
-    private BasicDBObject keepOnlyIdentifier(Object obj) {
-        return new BasicDBObject().append("_id", ((DBObject) obj).get("_id"));
+    private BasicDBObject keepOnlyIdentifier(Object obj, String collection) {
+        return new BasicDBObject().append("_id", ((DBObject) obj).get("_id")).append(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME, collection);
+    }
+
+    private String getCollectionName(Field field) {
+        return ReflectionsUtil.getGenericType(field).getAnnotation(Document.class).collection();
     }
 
 }

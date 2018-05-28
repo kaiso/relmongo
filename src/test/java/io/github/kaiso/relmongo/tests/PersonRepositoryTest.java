@@ -15,6 +15,7 @@ import io.github.kaiso.relmongo.data.repository.HouseRepository;
 import io.github.kaiso.relmongo.data.repository.PassportRepository;
 import io.github.kaiso.relmongo.data.repository.PersonRepository;
 import io.github.kaiso.relmongo.tests.common.AbstractBaseTest;
+import io.github.kaiso.relmongo.util.RelMongoConstants;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -104,6 +105,7 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         System.out.println("relational id" + passport.getId());
         BasicDBObject obj = new BasicDBObject();
         obj.put("_id", passport.getId());
+        obj.put(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME  ,"passports");
         assertEquals(personNoRelational.get("passportref"), obj);
     }
 
