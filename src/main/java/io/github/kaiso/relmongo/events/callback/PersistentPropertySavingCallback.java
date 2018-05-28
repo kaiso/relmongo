@@ -64,7 +64,7 @@ public class PersistentPropertySavingCallback implements FieldCallback {
                 ((BasicDBObject) source).put(name, list);
             } else if (reference instanceof BasicDBObject) {
                 ((BasicDBObject) source).remove(field.getName());
-                ((BasicDBObject) source).put(name, ((BasicDBObject) reference).get("_id"));
+                ((BasicDBObject) source).put(name, this.keepOnlyIdentifier(reference));
             }
         } catch (Exception e) {
             throw new IllegalArgumentException("Property defined in @JoinProperty annotation is not present", e);

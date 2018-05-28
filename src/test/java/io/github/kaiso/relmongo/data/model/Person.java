@@ -17,19 +17,19 @@ public class Person {
     private String email;
     
     @OneToMany(fetch=FetchType.EAGER)
-    @JoinProperty(name="cars_ids")
+    @JoinProperty(name="carsrefs")
     private List<Car> cars;
     
     @OneToMany(fetch=FetchType.LAZY)
-    @JoinProperty(name="houses_ids")
+    @JoinProperty(name="housesrefs")
     private List<House> houses;
     
     @OneToOne(fetch=FetchType.EAGER)
-    @JoinProperty(name = "passportId")
+    @JoinProperty(name = "passportref")
     private Passport passport;
     
     @OneToOne(fetch=FetchType.LAZY)
-    @JoinProperty(name = "drivingLicenseId")
+    @JoinProperty(name = "drivingLicenseref")
     private DrivingLicense drivingLicense;
     
     public String getName() {
