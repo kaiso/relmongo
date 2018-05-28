@@ -83,6 +83,7 @@ database layout when executing this test :
     cars : [ 
         {
             _id : ObjectId(5afaff0e2557db3a140d0f85)
+            _relmongo_target: cars
         }
     ]
 }
@@ -91,6 +92,7 @@ database layout when executing this test :
 - [x] Based on [Spring framework and derivatives](https://spring.io/)
 - [x] Simple to use
 - [x] The lazy loading is done in a bulk way so no N+1 problems
+- [x] Ready to use on existing database with few changes and in many cases with no changes
 # Notes
 - RelMongo may be an alternative for DBREF which allow to use $lookup querries in mongodb while it is not possible with DBREF.
 - [MongoDB](https://www.mongodb.com/) is a document oriented database and is not suitable for relations, if you are using relations massively you may have
