@@ -16,6 +16,7 @@
 
 package io.github.kaiso.relmongo.events.callback;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 
 import io.github.kaiso.relmongo.annotation.FetchType;
@@ -47,15 +48,15 @@ public class PersistentPropertyLoadingCallback implements FieldCallback {
         FetchType fetchType = null;
         if (field.isAnnotationPresent(OneToMany.class)) {
             fetchType = field.getAnnotation(OneToMany.class).fetch();
-            loadAssociation(field, fetchType);
+            loadAssociation(field, fetchType, OneToMany.class);
         } else if (field.isAnnotationPresent(OneToOne.class)) {
             fetchType = field.getAnnotation(OneToOne.class).fetch();
-            loadAssociation(field, fetchType);
+            loadAssociation(field, fetchType, OneToOne.class);
         }
 
     }
 
-    private void loadAssociation(Field field, FetchType fetchType) {
+    private void loadAssociation(Field field, FetchType fetchType, Class<?> annotation) {
         String name = "";
         try {
             name = field.getAnnotation(JoinProperty.class).name();
@@ -65,6 +66,12 @@ public class PersistentPropertyLoadingCallback implements FieldCallback {
         Object ids = null;
         try {
             ids = ((BasicDBObject) source).get(name);
+            if (OneToOne.class.equals(annotation) && ids instanceof BasicDBList) {
+                // mongo database lookups return always an array if unwind is not used event if
+                // it is a one ot one association
+                BasicDBList list = (BasicDBList) ids;
+                ids = list.isEmpty() ? list : list.get(0);
+            }
         } catch (Exception e) {
             throw new IllegalArgumentException("Property defined in @JoinProperty annotation is not present", e);
         }

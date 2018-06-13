@@ -55,7 +55,7 @@ public final class PersistentRelationResolver {
                 } else {
                     source.put(relation.getFieldName(), relation.getObjectIds());
                 }
-            } else if (relation.getObjectIds() instanceof BasicDBObject) {
+            } else if (relation.getObjectIds() instanceof BasicDBObject && hasToLoad((BasicDBObject) relation.getObjectIds())) {
                 if (FetchType.EAGER.equals(relation.getFetchType())) {
                     source.put(relation.getFieldName(), DatabaseLoader.getDocumentByPropertyValue(mongoOperations, mapIdentifier(relation.getObjectIds()),
                             relation.getReferencedPropertyName(), collection));
