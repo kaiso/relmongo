@@ -91,7 +91,6 @@ database layout when executing this test :
 # Strengths
 - [x] Based on [Spring framework and derivatives](https://spring.io/)
 - [x] Simple to use
-- [x] The lazy loading is done in a bulk way so no N+1 problems
 - [x] Ready to use on existing database with few changes and in many cases with no changes
 # Notes
 - RelMongo may be an alternative for DBREF which allow to use $lookup querries in mongodb while it is not possible with DBREF.
