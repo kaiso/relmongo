@@ -21,6 +21,9 @@ To get more details please see the [release notes](https://github.com/kaiso/relm
       <version>x.y.z</version>
    </dependency>
   ```
+# Compatibility Matrix
+
+[See compatibility on wiki](https://github.com/kaiso/relmongo/wiki/Compatibility-Matrix)
 
 # Usage
 RelMongo is very simple to use.<br>
