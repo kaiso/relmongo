@@ -22,6 +22,7 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -74,18 +75,27 @@ public class PersonRepositoryTest extends AbstractBaseTest {
 
     @Test
     public void shouldPersistOnlyIdOnOneToManyRelation() {
-        Car car = new Car();
-        car.setColor(Color.BLUE);
-        car.setManufacturer("BMW");
-        carRepository.save(car);
+        Car car1 = new Car();
+        car1.setColor(Color.BLUE);
+        car1.setManufacturer("BMW");
+        Car car2 = new Car();
+        car2.setColor(Color.BLUE);
+        car2.setManufacturer("BMW");
+        carRepository.save(car1);
+        carRepository.save(car2);
         Person person = new Person();
         person.setName("Dave");
         person.setEmail("dave@mail.com");
-        person.setCars(Arrays.asList(new Car[] { car }));
+        person.setCars(Arrays.asList(new Car[] { car1, car2 }));
         repository.save(person);
 
         Document document = mongoOperations.getCollection("people").find().iterator().next();
         assertNull(document.get("cars"));
+        Document obj = new Document();
+        obj.put("_id", car1.getId());
+        obj.put(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME, "cars");
+        assertTrue(((Collection<?>)document.get("carsrefs")).size() == 2);
+        assertEquals(((Collection<?>)document.get("carsrefs")).iterator().next(), obj);
     }
 
     @Test
@@ -104,7 +114,7 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         System.out.println("relational id" + passport.getId());
         Document obj = new Document();
         obj.put("_id", passport.getId());
-        obj.put(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME, "passports");
+        obj.put(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME, "passport");
         assertEquals(document.get("passportref"), obj);
     }
 
