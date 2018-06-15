@@ -16,14 +16,9 @@
 
 package io.github.kaiso.relmongo.mongo;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-
-import io.github.kaiso.relmongo.annotation.FetchType;
-import io.github.kaiso.relmongo.lazy.LazyLoadingProxy;
-import io.github.kaiso.relmongo.lazy.RelMongoLazyLoader;
-import io.github.kaiso.relmongo.model.LoadableObjectsMetadata;
-import io.github.kaiso.relmongo.util.RelMongoConstants;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.cglib.proxy.Factory;
@@ -32,9 +27,11 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.objenesis.ObjenesisStd;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
+import io.github.kaiso.relmongo.annotation.FetchType;
+import io.github.kaiso.relmongo.lazy.LazyLoadingProxy;
+import io.github.kaiso.relmongo.lazy.RelMongoLazyLoader;
+import io.github.kaiso.relmongo.model.LoadableObjectsMetadata;
+import io.github.kaiso.relmongo.util.RelMongoConstants;
 
 public final class PersistentRelationResolver {
 
@@ -47,6 +44,9 @@ public final class PersistentRelationResolver {
     public static void resolveOnLoading(MongoOperations mongoOperations, List<LoadableObjectsMetadata> loadableObjects, org.bson.Document document) {
         for (LoadableObjectsMetadata relation : loadableObjects) {
             String collection = relation.getTargetAssociationClass().getAnnotation(Document.class).collection();
+            if(collection == null || "".equals(collection)) {
+            	   collection = relation.getTargetAssociationClass().getSimpleName().toLowerCase();
+            }
             if (relation.getObjectIds() instanceof Collection && hasToLoad((Collection<?>) relation.getObjectIds())) {
                 if (FetchType.EAGER.equals(relation.getFetchType())) {
                     List<Object> identifierList = ((Collection<?>) relation.getObjectIds()).stream().map(PersistentRelationResolver::mapIdentifier)
