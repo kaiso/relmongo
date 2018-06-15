@@ -47,6 +47,9 @@ public final class PersistentRelationResolver {
     public static void resolveOnLoading(MongoOperations mongoOperations, List<LoadableObjectsMetadata> loadableObjects, DBObject source) {
         for (LoadableObjectsMetadata relation : loadableObjects) {
             String collection = relation.getTargetAssociationClass().getAnnotation(Document.class).collection();
+            if(collection == null || "".equals(collection)) {
+         	   collection = relation.getTargetAssociationClass().getSimpleName().toLowerCase();
+         }
             if (relation.getObjectIds() instanceof BasicDBList && hasToLoad((BasicDBList) relation.getObjectIds())) {
                 if (FetchType.EAGER.equals(relation.getFetchType())) {
                     List<Object> identifierList = ((BasicDBList) relation.getObjectIds()).stream().map(PersistentRelationResolver::mapIdentifier)

@@ -1,5 +1,21 @@
 package io.github.kaiso.relmongo.tests;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.test.context.ContextConfiguration;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
@@ -16,21 +32,6 @@ import io.github.kaiso.relmongo.data.repository.PassportRepository;
 import io.github.kaiso.relmongo.data.repository.PersonRepository;
 import io.github.kaiso.relmongo.tests.common.AbstractBaseTest;
 import io.github.kaiso.relmongo.util.RelMongoConstants;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.test.context.ContextConfiguration;
-
-import java.util.Arrays;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ContextConfiguration(classes = { PersonRepositoryTest.class })
 public class PersonRepositoryTest extends AbstractBaseTest {
@@ -76,17 +77,28 @@ public class PersonRepositoryTest extends AbstractBaseTest {
 
     @Test
     public void shouldPersistOnlyIdOnOneToManyRelation() {
-        Car car = new Car();
-        car.setColor(Color.BLUE);
-        car.setManufacturer("BMW");
-        carRepository.save(car);
+        Car car1 = new Car();
+        car1.setColor(Color.BLUE);
+        car1.setManufacturer("BMW");
+        Car car2 = new Car();
+        car2.setColor(Color.BLUE);
+        car2.setManufacturer("BMW");
+        carRepository.save(car1);
+        carRepository.save(car2);
         Person person = new Person();
         person.setName("Dave");
         person.setEmail("dave@mail.com");
-        person.setCars(Arrays.asList(new Car[] { car }));
+        person.setCars(Arrays.asList(new Car[] { car1, car2 }));
         repository.save(person);
-        DBObject personNoRelational = mongoOperations.getCollection("people").find().next();
-        assertNull(personNoRelational.get("cars"));
+
+
+       DBObject document = mongoOperations.getCollection("people").find().iterator().next();
+        assertNull(document.get("cars"));
+        DBObject obj = new BasicDBObject();
+        obj.put("_id", car1.getId());
+        obj.put(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME, "cars");
+        assertTrue(((Collection<?>)document.get("carsrefs")).size() == 2);
+        assertEquals(((Collection<?>)document.get("carsrefs")).iterator().next(), obj);
     }
 
     @Test
@@ -105,7 +117,7 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         System.out.println("relational id" + passport.getId());
         BasicDBObject obj = new BasicDBObject();
         obj.put("_id", passport.getId());
-        obj.put(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME  ,"passports");
+        obj.put(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME, "passport");
         assertEquals(personNoRelational.get("passportref"), obj);
     }
 

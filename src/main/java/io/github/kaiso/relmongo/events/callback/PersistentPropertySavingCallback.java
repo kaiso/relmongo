@@ -80,7 +80,11 @@ public class PersistentPropertySavingCallback implements FieldCallback {
     }
 
     private String getCollectionName(Field field) {
-        return ReflectionsUtil.getGenericType(field).getAnnotation(Document.class).collection();
+        String collection = ReflectionsUtil.getGenericType(field).getAnnotation(Document.class).collection();
+        if(collection == null || "".equals(collection)) {
+        	   collection = ReflectionsUtil.getGenericType(field).getSimpleName().toLowerCase();
+        }
+		return collection;
     }
 
 }
