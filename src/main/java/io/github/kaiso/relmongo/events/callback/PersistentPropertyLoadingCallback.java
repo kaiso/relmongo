@@ -17,7 +17,6 @@
 package io.github.kaiso.relmongo.events.callback;
 
 import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
 
 import io.github.kaiso.relmongo.annotation.FetchType;
 import io.github.kaiso.relmongo.annotation.JoinProperty;
@@ -65,7 +64,7 @@ public class PersistentPropertyLoadingCallback implements FieldCallback {
         }
         Object ids = null;
         try {
-            ids = ((BasicDBObject) source).get(name);
+            ids = ((org.bson.Document) source).get(name);
             if (OneToOne.class.equals(annotation) && ids instanceof BasicDBList) {
                 // mongo database lookups return always an array if unwind is not used event if
                 // it is a one ot one association

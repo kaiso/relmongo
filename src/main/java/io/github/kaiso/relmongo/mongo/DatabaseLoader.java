@@ -2,8 +2,9 @@ package io.github.kaiso.relmongo.mongo;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import com.mongodb.client.FindIterable;
 
+import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -12,6 +13,7 @@ import org.springframework.util.Assert;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 public final class DatabaseLoader {
@@ -20,22 +22,26 @@ public final class DatabaseLoader {
         super();
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({ "rawtypes" })
     public static BasicDBList getDocumentsById(MongoOperations mongoOperations, List<Object> ids, String collection) {
         Assert.notNull(ids, "Ids must not be null!");
         Assert.hasText(collection, "Collection must not be null or empty!");
         BasicDBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
-        List documents = mongoOperations.getCollection(collection).find(query).toArray();
+        FindIterable<Document> result = mongoOperations.getCollection(collection).find(query);
         BasicDBList list = new BasicDBList();
-        list.addAll(documents);
+        for (Iterator iterator = result.iterator(); iterator.hasNext();) {
+            list.add(iterator.next());
+
+        }
         return list;
     }
 
-    public static DBObject getDocumentByPropertyValue(MongoOperations mongoOperations, Object objectId, String propertyName, String collection) {
+    public static Document getDocumentByPropertyValue(MongoOperations mongoOperations, Object objectId, String propertyName, String collection) {
         Assert.notNull(objectId, "objectId must not be null!");
         Assert.hasText(collection, "Collection must not be null or empty!");
         BasicDBObject query = new BasicDBObject(propertyName, new BasicDBObject("$eq", objectId));
-        return mongoOperations.getCollection(collection).findOne(query);
+        FindIterable<Document> result = mongoOperations.getCollection(collection).find(query);
+        return result.iterator().hasNext() ? result.iterator().next() : null;
     }
 
     public static <T> Collection<T> findByIds(MongoOperations mongoOperations, Class<T> clazz, ObjectId... id) {

@@ -17,8 +17,6 @@
 package io.github.kaiso.relmongo.events.callback;
 
 import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 
 import io.github.kaiso.relmongo.annotation.JoinProperty;
 import io.github.kaiso.relmongo.annotation.OneToMany;
@@ -59,24 +57,24 @@ public class PersistentPropertySavingCallback implements FieldCallback {
         }
         Object reference = null;
         try {
-            reference = ((BasicDBObject) source).get(field.getName());
+            reference = ((org.bson.Document) source).get(field.getName());
             String collection = getCollectionName(field);
             if (reference instanceof BasicDBList) {
                 BasicDBList list = new BasicDBList();
                 list.addAll(((BasicDBList) reference).stream().map(dbObject -> this.keepOnlyIdentifier(dbObject, collection)).collect(Collectors.toList()));
-                ((BasicDBObject) source).remove(field.getName());
-                ((BasicDBObject) source).put(name, list);
-            } else if (reference instanceof BasicDBObject) {
-                ((BasicDBObject) source).remove(field.getName());
-                ((BasicDBObject) source).put(name, this.keepOnlyIdentifier(reference, collection));
+                ((org.bson.Document) source).remove(field.getName());
+                ((org.bson.Document) source).put(name, list);
+            } else if (reference instanceof org.bson.Document) {
+                ((org.bson.Document) source).remove(field.getName());
+                ((org.bson.Document) source).put(name, this.keepOnlyIdentifier(reference, collection));
             }
         } catch (Exception e) {
             throw new IllegalArgumentException("Property defined in @JoinProperty annotation is not present", e);
         }
     }
 
-    private BasicDBObject keepOnlyIdentifier(Object obj, String collection) {
-        return new BasicDBObject().append("_id", ((DBObject) obj).get("_id")).append(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME, collection);
+    private org.bson.Document keepOnlyIdentifier(Object obj, String collection) {
+        return new org.bson.Document().append("_id", ((org.bson.Document) obj).get("_id")).append(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME, collection);
     }
 
     private String getCollectionName(Field field) {

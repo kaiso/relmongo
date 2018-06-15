@@ -50,7 +50,7 @@ public class MongoEventListener extends AbstractMongoEventListener<Object> {
 
     @Override
     public void onBeforeSave(BeforeSaveEvent<Object> event) {
-        PersistentPropertySavingCallback callback =  new PersistentPropertySavingCallback(event.getDBObject());
+        PersistentPropertySavingCallback callback =  new PersistentPropertySavingCallback(event.getDocument());
         ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
         super.onBeforeSave(event);
     }

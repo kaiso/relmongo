@@ -1,8 +1,5 @@
 package io.github.kaiso.relmongo.tests;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
-
 import io.github.kaiso.relmongo.data.model.Car;
 import io.github.kaiso.relmongo.data.model.Color;
 import io.github.kaiso.relmongo.data.model.DrivingLicense;
@@ -17,6 +14,7 @@ import io.github.kaiso.relmongo.data.repository.PersonRepository;
 import io.github.kaiso.relmongo.tests.common.AbstractBaseTest;
 import io.github.kaiso.relmongo.util.RelMongoConstants;
 
+import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,8 +83,9 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         person.setEmail("dave@mail.com");
         person.setCars(Arrays.asList(new Car[] { car }));
         repository.save(person);
-        DBObject personNoRelational = mongoOperations.getCollection("people").find().next();
-        assertNull(personNoRelational.get("cars"));
+
+        Document document = mongoOperations.getCollection("people").find().iterator().next();
+        assertNull(document.get("cars"));
     }
 
     @Test
@@ -99,14 +98,14 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         person.setEmail("dave@mail.com");
         person.setPassport(passport);
         repository.save(person);
-        DBObject personNoRelational = mongoOperations.getCollection("people").find().next();
-        assertNull(personNoRelational.get("passport"));
-        System.out.println("db id" + personNoRelational.get("passportId"));
+        Document document = mongoOperations.getCollection("people").find().iterator().next();
+        assertNull(document.get("passport"));
+        System.out.println("db id" + document.get("passportId"));
         System.out.println("relational id" + passport.getId());
-        BasicDBObject obj = new BasicDBObject();
+        Document obj = new Document();
         obj.put("_id", passport.getId());
-        obj.put(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME  ,"passports");
-        assertEquals(personNoRelational.get("passportref"), obj);
+        obj.put(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME, "passports");
+        assertEquals(document.get("passportref"), obj);
     }
 
     @Test

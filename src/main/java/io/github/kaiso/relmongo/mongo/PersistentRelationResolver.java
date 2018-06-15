@@ -18,7 +18,6 @@ package io.github.kaiso.relmongo.mongo;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 
 import io.github.kaiso.relmongo.annotation.FetchType;
 import io.github.kaiso.relmongo.lazy.LazyLoadingProxy;
@@ -33,6 +32,7 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.objenesis.ObjenesisStd;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,23 +44,23 @@ public final class PersistentRelationResolver {
         super();
     }
 
-    public static void resolveOnLoading(MongoOperations mongoOperations, List<LoadableObjectsMetadata> loadableObjects, DBObject source) {
+    public static void resolveOnLoading(MongoOperations mongoOperations, List<LoadableObjectsMetadata> loadableObjects, org.bson.Document document) {
         for (LoadableObjectsMetadata relation : loadableObjects) {
             String collection = relation.getTargetAssociationClass().getAnnotation(Document.class).collection();
-            if (relation.getObjectIds() instanceof BasicDBList && hasToLoad((BasicDBList) relation.getObjectIds())) {
+            if (relation.getObjectIds() instanceof Collection && hasToLoad((Collection<?>) relation.getObjectIds())) {
                 if (FetchType.EAGER.equals(relation.getFetchType())) {
-                    List<Object> identifierList = ((BasicDBList) relation.getObjectIds()).stream().map(PersistentRelationResolver::mapIdentifier)
+                    List<Object> identifierList = ((Collection<?>) relation.getObjectIds()).stream().map(PersistentRelationResolver::mapIdentifier)
                             .collect(Collectors.toList());
-                    source.put(relation.getFieldName(), DatabaseLoader.getDocumentsById(mongoOperations, identifierList, collection));
+                    document.put(relation.getFieldName(), DatabaseLoader.getDocumentsById(mongoOperations, identifierList, collection));
                 } else {
-                    source.put(relation.getFieldName(), relation.getObjectIds());
+                    document.put(relation.getFieldName(), relation.getObjectIds());
                 }
-            } else if (relation.getObjectIds() instanceof BasicDBObject && hasToLoad((BasicDBObject) relation.getObjectIds())) {
+            } else if (relation.getObjectIds() instanceof org.bson.Document && hasToLoad((org.bson.Document) relation.getObjectIds())) {
                 if (FetchType.EAGER.equals(relation.getFetchType())) {
-                    source.put(relation.getFieldName(), DatabaseLoader.getDocumentByPropertyValue(mongoOperations, mapIdentifier(relation.getObjectIds()),
+                    document.put(relation.getFieldName(), DatabaseLoader.getDocumentByPropertyValue(mongoOperations, mapIdentifier(relation.getObjectIds()),
                             relation.getReferencedPropertyName(), collection));
                 } else {
-                    source.put(relation.getFieldName(), relation.getObjectIds());
+                    document.put(relation.getFieldName(), relation.getObjectIds());
                 }
             }
         }
@@ -81,28 +81,28 @@ public final class PersistentRelationResolver {
         return factory.newInstance(lazyLoader);
     }
 
-    private static boolean hasToLoad(BasicDBList objects) {
+    private static boolean hasToLoad(Collection<?> objects) {
         // the last contition verifies if the objects were already laoded by another
         // query
         if (objects.isEmpty())
             return false;
-        BasicDBObject basicDBObject = (BasicDBObject) objects.get(0);
-        return hasToLoad(basicDBObject);
+        org.bson.Document document = (org.bson.Document) objects.iterator().next();
+        return hasToLoad(document);
     }
 
     /**
      * checks if an object is already populated to be loaded anther time or not
      * 
-     * @param basicDBObject
+     * @param document
      * @return
      */
-    private static boolean hasToLoad(BasicDBObject basicDBObject) {
-        int propscount = basicDBObject.get(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME) == null ? 1 : 2;
-        return basicDBObject.size() <= propscount;
+    private static boolean hasToLoad(org.bson.Document document) {
+        int propscount = document.get(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME) == null ? 1 : 2;
+        return document.size() <= propscount;
     }
 
     public static Object mapIdentifier(Object object) {
-        return ((BasicDBObject) object).getObjectId("_id");
+        return ((org.bson.Document) object).getObjectId("_id");
     }
 
 }

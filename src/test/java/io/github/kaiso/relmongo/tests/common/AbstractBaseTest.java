@@ -60,7 +60,7 @@ public abstract class AbstractBaseTest {
 
     @Bean
     public MongoTemplate mongoTemplate() throws Exception {
-        return new MongoTemplate(mongo(), "test");
+        return new MongoTemplate(_mongo, "test");
     }
 
 }
