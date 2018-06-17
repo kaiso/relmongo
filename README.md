@@ -1,14 +1,12 @@
 <p align="center">
   <img src="https://raw.githubusercontent.com/kaiso/relmongo/master/docs/images/logo.png">
 </p>
-
-
-<p align="center">
+  
 [![][license img]][license]
 [![][maven img]][maven]
 [![][build img]][build]
-</p>
-<br/>
+<br>
+
 RelMongo (Relational Mongo) allows to use relations between mongodb collections in a JPA way <br>
 RelMongo is built in top of the [Spring Data MongoDB](https://projects.spring.io/spring-data-mongodb/) framework.
 # Features
