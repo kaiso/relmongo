@@ -3,7 +3,7 @@
 [![][maven img]][maven]
 [![][build img]][build]<br>
 RelMongo (Relational Mongo) allows to use relations between mongodb collections in a JPA way <br>
-RelMongo is based on Spring Data Mongo framework.
+RelMongo is built in top of the [Spring Data MongoDB](https://projects.spring.io/spring-data-mongodb/) framework.
 # Features
  RelMongo provides :
  - @EnableRelationalMongo to enable RelMongo annotations processing
