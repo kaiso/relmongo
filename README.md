@@ -1,4 +1,8 @@
-# RelMongo
+<p align="center">
+  <img src="https://raw.githubusercontent.com/kaiso/relmongo/master/docs/images/logo.png">
+</p>
+
+
 [![][license img]][license]
 [![][maven img]][maven]
 [![][build img]][build]<br>
