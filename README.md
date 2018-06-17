@@ -10,8 +10,9 @@ RelMongo is based on Spring Data Mongo framework.
  - @OneToMany annotation to address 1..N relations
  - @OneToOne annotation to address 1..1 relations
  
-To get more details please see the [release notes](https://github.com/kaiso/relmongo/releases) and the wiki.
-
+To get more details please see the [release notes](https://github.com/kaiso/relmongo/releases).
+# Wiki
+ [Take a tour in the RelMongo wiki](https://github.com/kaiso/relmongo/wiki)
 # Binaries
 - Maven
   ```xml
