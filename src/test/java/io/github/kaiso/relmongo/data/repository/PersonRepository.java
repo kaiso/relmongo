@@ -1,13 +1,13 @@
 package io.github.kaiso.relmongo.data.repository;
 
-import io.github.kaiso.relmongo.data.model.Person;
+import java.util.Optional;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import java.util.Optional;
+import io.github.kaiso.relmongo.data.model.Person;
 
-public interface PersonRepository extends MongoRepository<Person, String>{
+public interface PersonRepository extends MongoRepository<Person, String>, PersonRepositoryCustom {
 
-    
-    Optional<Person> findById(String id);
+	Optional<Person> findById(String id);
+
 }
