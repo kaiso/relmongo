@@ -1,5 +1,5 @@
 /**
-*   Copyright 2018 Kais OMRI and authors.
+*   Copyright 2018 Kais OMRI [kais.omri.int@gmail.com] and authors.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.
@@ -13,22 +13,22 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 */
-
 package io.github.kaiso.relmongo.annotation;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 /**
- * Describes Unidirectional OneToOne relation
- * The referenced property for this association in the target object is allways the "_id"
+ *  Defines the set of cascadable operations that are propagated to the associated entity 
  *
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface OneToOne {
-    FetchType fetch() default FetchType.LAZY;
-    CascadeType cascade() default CascadeType.NONE;
+public enum CascadeType {
+    /**
+     * Cascade persist operation
+     */
+    PERSIST,
+    
+    /**
+     * do nothing
+     */
+    NONE
+
+
 }

@@ -1,6 +1,6 @@
 package io.github.kaiso.relmongo.lazy;
 
-import io.github.kaiso.relmongo.mongo.DatabaseLoader;
+import io.github.kaiso.relmongo.mongo.DatabaseOperations;
 
 import org.bson.types.ObjectId;
 import org.springframework.cglib.proxy.LazyLoader;
@@ -33,11 +33,11 @@ public class RelMongoLazyLoader implements LazyLoader {
             if (Collection.class.isAssignableFrom(original.getClass())) {
                 List<ObjectId> idlist = (List<ObjectId>) ((Collection) original).stream().map(this::getIdFromObject).collect(Collectors.toList());
                 if (!idlist.isEmpty()) {
-                    return DatabaseLoader.findByIds(mongoOperations, ((Collection) original).iterator().next().getClass(),
+                    return DatabaseOperations.findByIds(mongoOperations, ((Collection) original).iterator().next().getClass(),
                             idlist.toArray(new ObjectId[idlist.size()]));
                 }
             } else {
-                return DatabaseLoader.findByPropertyValue(mongoOperations, original.getClass(), "_id", getIdFromObject(original));
+                return DatabaseOperations.findByPropertyValue(mongoOperations, original.getClass(), "_id", getIdFromObject(original));
             }
         }
         return null;

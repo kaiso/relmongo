@@ -31,4 +31,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface OneToMany {
     FetchType  fetch() default FetchType.LAZY;
+    CascadeType cascade() default CascadeType.NONE;
 }
