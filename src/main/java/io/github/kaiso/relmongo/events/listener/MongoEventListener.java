@@ -16,10 +16,12 @@
 
 package io.github.kaiso.relmongo.events.listener;
 
+import io.github.kaiso.relmongo.events.callback.PersistentPropertyCascadingCallback;
 import io.github.kaiso.relmongo.events.callback.PersistentPropertyLazyLoadingCallback;
 import io.github.kaiso.relmongo.events.callback.PersistentPropertyLoadingCallback;
 import io.github.kaiso.relmongo.events.callback.PersistentPropertySavingCallback;
 import io.github.kaiso.relmongo.model.LoadableObjectsMetadata;
+import io.github.kaiso.relmongo.mongo.Operation;
 import io.github.kaiso.relmongo.mongo.PersistentRelationResolver;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,7 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.mapping.event.AbstractMongoEventListener;
 import org.springframework.data.mongodb.core.mapping.event.AfterConvertEvent;
 import org.springframework.data.mongodb.core.mapping.event.AfterLoadEvent;
+import org.springframework.data.mongodb.core.mapping.event.AfterSaveEvent;
 import org.springframework.data.mongodb.core.mapping.event.BeforeSaveEvent;
 import org.springframework.util.ReflectionUtils;
 
@@ -61,11 +64,16 @@ public class MongoEventListener extends AbstractMongoEventListener<Object> {
         ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
         super.onAfterConvert(event);
     }
+
+    @Override
+    public void onAfterSave(AfterSaveEvent<Object> event) {
+        super.onAfterSave(event);
+        PersistentPropertyCascadingCallback callback = new PersistentPropertyCascadingCallback(event.getSource(), mongoOperations, Operation.PERSIST);
+        ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
+        
+    }
     
     
-    
-    
-    
-    
+
 
 }

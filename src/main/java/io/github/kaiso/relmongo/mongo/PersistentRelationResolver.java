@@ -51,13 +51,13 @@ public final class PersistentRelationResolver {
                 if (FetchType.EAGER.equals(relation.getFetchType())) {
                     List<Object> identifierList = ((Collection<?>) relation.getObjectIds()).stream().map(PersistentRelationResolver::mapIdentifier)
                             .collect(Collectors.toList());
-                    document.put(relation.getFieldName(), DatabaseLoader.getDocumentsById(mongoOperations, identifierList, collection));
+                    document.put(relation.getFieldName(), DatabaseOperations.getDocumentsById(mongoOperations, identifierList, collection));
                 } else {
                     document.put(relation.getFieldName(), relation.getObjectIds());
                 }
             } else if (relation.getObjectIds() instanceof org.bson.Document && hasToLoad((org.bson.Document) relation.getObjectIds())) {
                 if (FetchType.EAGER.equals(relation.getFetchType())) {
-                    document.put(relation.getFieldName(), DatabaseLoader.getDocumentByPropertyValue(mongoOperations, mapIdentifier(relation.getObjectIds()),
+                    document.put(relation.getFieldName(), DatabaseOperations.getDocumentByPropertyValue(mongoOperations, mapIdentifier(relation.getObjectIds()),
                             relation.getReferencedPropertyName(), collection));
                 } else {
                     document.put(relation.getFieldName(), relation.getObjectIds());
