@@ -1,5 +1,6 @@
 package io.github.kaiso.relmongo.data.model;
 
+import io.github.kaiso.relmongo.annotation.CascadeType;
 import io.github.kaiso.relmongo.annotation.FetchType;
 import io.github.kaiso.relmongo.annotation.JoinProperty;
 import io.github.kaiso.relmongo.annotation.OneToMany;
@@ -16,7 +17,7 @@ public class Person {
     private String name;
     private String email;
     
-    @OneToMany(fetch=FetchType.EAGER)
+    @OneToMany(fetch=FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinProperty(name="carsrefs")
     private List<Car> cars;
     
@@ -28,7 +29,7 @@ public class Person {
     @JoinProperty(name = "passportref")
     private Passport passport;
     
-    @OneToOne(fetch=FetchType.LAZY)
+    @OneToOne(fetch=FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinProperty(name = "drivingLicenseref")
     private DrivingLicense drivingLicense;
     

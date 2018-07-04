@@ -47,20 +47,21 @@ public final class PersistentRelationResolver {
     public static void resolveOnLoading(MongoOperations mongoOperations, List<LoadableObjectsMetadata> loadableObjects, DBObject source) {
         for (LoadableObjectsMetadata relation : loadableObjects) {
             String collection = relation.getTargetAssociationClass().getAnnotation(Document.class).collection();
-            if(collection == null || "".equals(collection)) {
-         	   collection = relation.getTargetAssociationClass().getSimpleName().toLowerCase();
-         }
+            if (collection == null || "".equals(collection)) {
+                collection = relation.getTargetAssociationClass().getSimpleName().toLowerCase();
+            }
             if (relation.getObjectIds() instanceof BasicDBList && hasToLoad((BasicDBList) relation.getObjectIds())) {
                 if (FetchType.EAGER.equals(relation.getFetchType())) {
                     List<Object> identifierList = ((BasicDBList) relation.getObjectIds()).stream().map(PersistentRelationResolver::mapIdentifier)
                             .collect(Collectors.toList());
-                    source.put(relation.getFieldName(), DatabaseLoader.getDocumentsById(mongoOperations, identifierList, collection));
+
+                    source.put(relation.getFieldName(), DatabaseOperations.getDocumentsById(mongoOperations, identifierList, collection));
                 } else {
                     source.put(relation.getFieldName(), relation.getObjectIds());
                 }
             } else if (relation.getObjectIds() instanceof BasicDBObject && hasToLoad((BasicDBObject) relation.getObjectIds())) {
                 if (FetchType.EAGER.equals(relation.getFetchType())) {
-                    source.put(relation.getFieldName(), DatabaseLoader.getDocumentByPropertyValue(mongoOperations, mapIdentifier(relation.getObjectIds()),
+                    source.put(relation.getFieldName(), DatabaseOperations.getDocumentByPropertyValue(mongoOperations, mapIdentifier(relation.getObjectIds()),
                             relation.getReferencedPropertyName(), collection));
                 } else {
                     source.put(relation.getFieldName(), relation.getObjectIds());

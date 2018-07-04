@@ -18,11 +18,13 @@ package io.github.kaiso.relmongo.events.callback;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 
+import io.github.kaiso.relmongo.annotation.CascadeType;
 import io.github.kaiso.relmongo.annotation.JoinProperty;
 import io.github.kaiso.relmongo.annotation.OneToMany;
 import io.github.kaiso.relmongo.annotation.OneToOne;
+import io.github.kaiso.relmongo.exception.RelMongoConfigurationException;
+import io.github.kaiso.relmongo.exception.RelMongoProcessingException;
 import io.github.kaiso.relmongo.util.ReflectionsUtil;
 import io.github.kaiso.relmongo.util.RelMongoConstants;
 
@@ -31,60 +33,68 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class PersistentPropertySavingCallback implements FieldCallback {
 
-    private Object source;
+	private Object source;
 
-    public PersistentPropertySavingCallback(Object source) {
-        super();
-        this.source = source;
-    }
+	public PersistentPropertySavingCallback(Object source) {
+		super();
+		this.source = source;
+	}
 
-    public void doWith(Field field) throws IllegalAccessException {
-        ReflectionUtils.makeAccessible(field);
-        if (field.isAnnotationPresent(OneToMany.class) || field.isAnnotationPresent(OneToOne.class)) {
-            saveAssociation(field);
-        }
+	public void doWith(Field field) throws IllegalAccessException {
+		ReflectionUtils.makeAccessible(field);
+		if (field.isAnnotationPresent(OneToMany.class)) {
+			saveAssociation(field, field.getAnnotation(OneToMany.class).cascade());
+		} else if (field.isAnnotationPresent(OneToOne.class)) {
+			saveAssociation(field, field.getAnnotation(OneToOne.class).cascade());
+		}
 
-    }
+	}
 
-    private void saveAssociation(Field field) {
-        String name = "";
-        try {
-            name = field.getAnnotation(JoinProperty.class).name();
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Missing or misconfigured @JoinProperty annotation", e);
-        }
-        Object reference = null;
-        try {
-            reference = ((BasicDBObject) source).get(field.getName());
-            String collection = getCollectionName(field);
-            if (reference instanceof BasicDBList) {
-                BasicDBList list = new BasicDBList();
-                list.addAll(((BasicDBList) reference).stream().map(dbObject -> this.keepOnlyIdentifier(dbObject, collection)).collect(Collectors.toList()));
-                ((BasicDBObject) source).remove(field.getName());
-                ((BasicDBObject) source).put(name, list);
-            } else if (reference instanceof BasicDBObject) {
-                ((BasicDBObject) source).remove(field.getName());
-                ((BasicDBObject) source).put(name, this.keepOnlyIdentifier(reference, collection));
-            }
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Property defined in @JoinProperty annotation is not present", e);
-        }
-    }
 
-    private BasicDBObject keepOnlyIdentifier(Object obj, String collection) {
-        return new BasicDBObject().append("_id", ((DBObject) obj).get("_id")).append(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME, collection);
-    }
+	private void saveAssociation(Field field, CascadeType cascadeType) {
+		String name = "";
+		try {
+			name = field.getAnnotation(JoinProperty.class).name();
+		} catch (Exception e) {
+			throw new RelMongoConfigurationException("Missing or misconfigured @JoinProperty annotation", e);
+		}
+		Object reference = null;
+		reference = ((BasicDBObject) source).get(field.getName());
+		String collection = getCollectionName(field);
+		if (reference instanceof BasicDBList) {
+			BasicDBList list = new BasicDBList();
+			list.addAll(((BasicDBList) reference).stream()
+					.map(dbObject -> this.keepOnlyIdentifier(dbObject, collection, cascadeType))
+					.collect(Collectors.toList()));
+			((BasicDBObject) source).remove(field.getName());
+			((BasicDBObject) source).put(name, list);
+		} else if (reference instanceof BasicDBObject) {
+			((BasicDBObject) source).remove(field.getName());
+			((BasicDBObject) source).put(name, this.keepOnlyIdentifier(reference, collection, cascadeType));
+		}
+	}
 
-    private String getCollectionName(Field field) {
-        String collection = ReflectionsUtil.getGenericType(field).getAnnotation(Document.class).collection();
-        if(collection == null || "".equals(collection)) {
-        	   collection = ReflectionsUtil.getGenericType(field).getSimpleName().toLowerCase();
-        }
+	private BasicDBObject keepOnlyIdentifier(Object obj, String collection, CascadeType cascadeType) {
+		Object objectId = ((BasicDBObject) obj).get("_id");
+		if (objectId == null && !Arrays.asList(CascadeType.PERSIST, CascadeType.ALL).contains(cascadeType)) {
+			throw new RelMongoProcessingException(
+					"ObjectId must not be null when persisting without cascade ALL or PERSIST ");
+		}
+		return new BasicDBObject().append("_id", objectId).append(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME,
+				collection);
+	}
+
+	private String getCollectionName(Field field) {
+		String collection = ReflectionsUtil.getGenericType(field).getAnnotation(Document.class).collection();
+		if (collection == null || "".equals(collection)) {
+			collection = ReflectionsUtil.getGenericType(field).getSimpleName().toLowerCase();
+		}
 		return collection;
-    }
+	}
 
 }
