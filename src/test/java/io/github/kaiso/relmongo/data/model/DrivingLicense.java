@@ -1,5 +1,10 @@
 package io.github.kaiso.relmongo.data.model;
 
+import io.github.kaiso.relmongo.annotation.CascadeType;
+import io.github.kaiso.relmongo.annotation.FetchType;
+import io.github.kaiso.relmongo.annotation.JoinProperty;
+import io.github.kaiso.relmongo.annotation.OneToOne;
+
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -12,6 +17,10 @@ public class DrivingLicense {
     
     private String number;
     
+    @OneToOne(fetch=FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinProperty(name = "state")
+    private State state;
+    
     public ObjectId getId() {
         return id;
     }
@@ -23,6 +32,12 @@ public class DrivingLicense {
     }
     public void setNumber(String number) {
         this.number = number;
+    }
+    public State getState() {
+        return state;
+    }
+    public void setState(State state) {
+        this.state = state;
     }
         
     
