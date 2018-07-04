@@ -16,7 +16,7 @@
 package io.github.kaiso.relmongo.annotation;
 
 /**
- *  Defines the set of cascadable operations that are propagated to the associated entity 
+ *  Defines the set of cascadable operations that are propagated to the associated document 
  *
  */
 public enum CascadeType {
@@ -24,6 +24,11 @@ public enum CascadeType {
      * Cascade persist operation
      */
     PERSIST,
+    
+    /**
+     * Cascade ALL operations
+     */
+    ALL,
     
     /**
      * do nothing

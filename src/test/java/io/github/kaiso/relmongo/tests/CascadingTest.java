@@ -1,5 +1,7 @@
 package io.github.kaiso.relmongo.tests;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
 import io.github.kaiso.relmongo.data.model.Car;
@@ -9,28 +11,28 @@ import io.github.kaiso.relmongo.data.model.House;
 import io.github.kaiso.relmongo.data.model.Passport;
 import io.github.kaiso.relmongo.data.model.Person;
 import io.github.kaiso.relmongo.data.model.State;
-import io.github.kaiso.relmongo.data.repository.CarRepository;
 import io.github.kaiso.relmongo.data.repository.DrivingLicenseRepository;
-import io.github.kaiso.relmongo.data.repository.HouseRepository;
-import io.github.kaiso.relmongo.data.repository.PassportRepository;
 import io.github.kaiso.relmongo.data.repository.PersonRepository;
 import io.github.kaiso.relmongo.tests.common.AbstractBaseTest;
 import io.github.kaiso.relmongo.util.RelMongoConstants;
 
-import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -38,189 +40,102 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ContextConfiguration(classes = { CascadingTest.class })
 public class CascadingTest extends AbstractBaseTest {
 
-	@Autowired
-	private PersonRepository repository;
+    @Autowired
+    private PersonRepository repository;
 
-	@Autowired
-	private CarRepository carRepository;
+    @Autowired
+    private DrivingLicenseRepository drivingLicenseRepository;
 
-	@Autowired
-	private HouseRepository houseRepository;
+    @Autowired
+    private MongoOperations mongoOperations;
 
-	@Autowired
-	private PassportRepository passportRepository;
+    @BeforeEach
+    public void beforeEach() {
+        mongoOperations.dropCollection(DrivingLicense.class);
+        mongoOperations.dropCollection(Passport.class);
+        mongoOperations.dropCollection(Person.class);
+        mongoOperations.dropCollection(House.class);
+        mongoOperations.dropCollection(Car.class);
+        mongoOperations.dropCollection(State.class);
+    }
 
-	@Autowired
-	private DrivingLicenseRepository drivingLicenseRepository;
+    @Test
+    public void shouldCascadeSaveOneToOneObject() {
+        State state = new State();
+        ObjectId drivingLicenseId = ObjectId.get();
+        state.setName("Paris");
+        DrivingLicense drivingLicense = new DrivingLicense();
+        drivingLicense.setNumber("12345");
+        drivingLicense.setState(state);
+        drivingLicense.setId(drivingLicenseId);
+        drivingLicenseRepository.save(drivingLicense);
 
-	@Autowired
-	private MongoOperations mongoOperations;
+        Person person = new Person();
+        person.setName("Dave");
+        person.setEmail("dave@mail.com");
+        person.setDrivingLicense(drivingLicense);
+        repository.save(person);
 
-	@BeforeEach
-	public void beforeEach() {
-		mongoOperations.dropCollection(DrivingLicense.class);
-		mongoOperations.dropCollection(Passport.class);
-		mongoOperations.dropCollection(Person.class);
-		mongoOperations.dropCollection(House.class);
-		mongoOperations.dropCollection(Car.class);
-	}
+        DBCursor drivingLicenses = mongoOperations.getCollection("drivingLicenses").find();
+        AtomicInteger count = new AtomicInteger(0);
+        AtomicReference<DBObject> drvDoc = new AtomicReference<DBObject>(null);
+        Consumer<DBObject> filter = new Consumer<DBObject>() {
 
-	
-	
-	
-	
+            @Override
+            public void accept(DBObject t) {
+                count.incrementAndGet();
+                drvDoc.set(t);
+            }
+        };
+        drivingLicenses.forEach(filter);
+        assertTrue(count.get() == 1);
+        assertEquals(drvDoc.get().get("_id"), drivingLicenseId);
+        DBObject document = mongoOperations.getCollection("states").find().iterator().next();
+        assertNotNull(document);
+        assertEquals("Paris", document.get("name"));
+    }
 
+    @Test
+    public void shouldCascadeSaveOneToManyObjects() {
+        Car car1 = new Car();
+        car1.setColor(Color.BLUE);
+        car1.setManufacturer("BMW");
 
-	@Test
-	public void shouldCascadeSaveOneToOneObject() {
-	    State state = new State();
-	    state.setName("Paris");
-		DrivingLicense drivingLicense = new DrivingLicense();
-		drivingLicense.setNumber("12345");
-		drivingLicense.setState(state);
-		Person person = new Person();
-		person.setName("Dave");
-		person.setEmail("dave@mail.com");
-		person.setDrivingLicense(drivingLicense);
-		repository.save(person);
-		Optional<DrivingLicense> dl = drivingLicenseRepository.findById(person.getId().toString());
-		assertNotNull(dl);
-		DBObject document = mongoOperations.getCollection("states").find().iterator().next();
-		assertNotNull(document);
-	}
+        Car car2 = new Car();
+        car2.setColor(Color.BLUE);
+        car2.setManufacturer("BMW");
 
-	@Test
-	public void shouldReplaceOneToOneRelation() {
-		Passport passport = new Passport();
-		passport.setNumber("12345");
-		passportRepository.save(passport);
-		Passport passport1 = new Passport();
-		passport1.setNumber("77777");
-		passportRepository.save(passport1);
-		Person person = new Person();
-		person.setName("Dave");
-		person.setEmail("dave@mail.com");
-		person.setPassport(passport);
-		repository.save(person);
-		Optional<Person> retreivedPerson = repository.findById(person.getId().toString());
-		assertEquals(retreivedPerson.get().getPassport().getNumber(), "12345");
+        Person person = new Person();
+        person.setName("Dave");
+        person.setEmail("dave@mail.com");
+        person.setCars(Arrays.asList(new Car[] { car1, car2 }));
+        repository.save(person);
 
-		person.setPassport(passport1);
-		repository.save(person);
-		Optional<Person> retreivedPerson1 = repository.findById(person.getId().toString());
-		assertEquals(retreivedPerson1.get().getPassport().getNumber(), "77777");
-	}
+        DBObject document = mongoOperations.getCollection("people").find().iterator().next();
+        assertNull(document.get("cars"));
+        BasicDBObject obj = new BasicDBObject();
+        obj.put("_id", car1.getId());
+        obj.put(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME, "cars");
+        assertTrue(((Collection<?>) document.get("carsrefs")).size() == 2);
+        assertTrue(((Collection<?>) document.get("carsrefs")).contains(obj));
 
-	@Test
-	public void shouldReplaceOneToManyRelation() {
-		Car car = new Car();
-		car.setColor(Color.BLUE);
-		String manufacturer = "BMW";
-		car.setManufacturer(manufacturer);
-		carRepository.save(car);
+        DBCursor cars = mongoOperations.getCollection("cars").find();
+        AtomicInteger count = new AtomicInteger(0);
+        AtomicReference<List<DBObject>> carsDocuments = new AtomicReference<>(new ArrayList<>());
+        Consumer<DBObject> filter = new Consumer<DBObject>() {
 
-		Car car1 = new Car();
-		car1.setColor(Color.RED);
-		String manufacturer1 = "JAGUAR";
-		car1.setManufacturer(manufacturer1);
-		carRepository.save(car1);
+            @Override
+            public void accept(DBObject t) {
+                count.incrementAndGet();
+                carsDocuments.get().add(t);
+            }
+        };
+        cars.forEach(filter);
+        assertTrue(count.get() == 2);
+        assertTrue(carsDocuments.get().stream().map((item) -> {
+            return item.get("_id");
+        }).collect(Collectors.toList()).contains(car1.getId()));
 
-		Person person = new Person();
-		person.setName("Dave");
-		person.setEmail("dave@mail.com");
-		person.setCars(Arrays.asList(new Car[] { car }));
-		repository.save(person);
-		Optional<Person> retreivedPerson = repository.findById(person.getId().toString());
-		assertFalse(retreivedPerson.get().getCars().isEmpty());
-		assertTrue(retreivedPerson.get().getCars().get(0).getColor().equals(Color.BLUE));
-		assertTrue(retreivedPerson.get().getCars().get(0).getManufacturer().equals(manufacturer));
-
-		person.setCars(Arrays.asList(new Car[] { car1 }));
-		repository.save(person);
-		Optional<Person> retreivedPerson1 = repository.findById(person.getId().toString());
-		assertFalse(retreivedPerson1.get().getCars().isEmpty());
-		assertTrue(retreivedPerson1.get().getCars().get(0).getColor().equals(Color.RED));
-		assertTrue(retreivedPerson1.get().getCars().get(0).getManufacturer().equals(manufacturer1));
-	}
-
-	@Test
-	public void shouldRemoveOneToOneRelation() {
-		Passport passport = new Passport();
-		passport.setNumber("12345");
-		passportRepository.save(passport);
-
-		DrivingLicense drivingLicense = new DrivingLicense();
-		drivingLicense.setNumber("12345");
-		drivingLicenseRepository.save(drivingLicense);
-
-		Person person = new Person();
-		person.setName("Dave");
-		person.setEmail("dave@mail.com");
-		person.setPassport(passport);
-		person.setDrivingLicense(drivingLicense);
-		repository.save(person);
-
-		Optional<Person> retreivedPerson = repository.findById(person.getId().toString());
-		assertEquals(retreivedPerson.get().getPassport().getNumber(), "12345");
-
-		person.setPassport(null);
-		person.setDrivingLicense(null);
-		repository.save(person);
-		Optional<Person> retreivedPerson1 = repository.findById(person.getId().toString());
-		assertNull(retreivedPerson1.get().getPassport());
-		assertNull(retreivedPerson1.get().getDrivingLicense());
-	}
-
-	@Test
-	public void shouldRemoveElementFromOneToManyRelation() {
-		Car car = new Car();
-		car.setColor(Color.BLUE);
-		String manufacturer = "BMW";
-		car.setManufacturer(manufacturer);
-		carRepository.save(car);
-
-		Car car1 = new Car();
-		car1.setColor(Color.RED);
-		String manufacturer1 = "JAGUAR";
-		car1.setManufacturer(manufacturer1);
-		carRepository.save(car1);
-
-		Person person = new Person();
-		person.setName("Dave");
-		person.setEmail("dave@mail.com");
-		person.setCars(Arrays.asList(new Car[] { car, car1 }));
-		repository.save(person);
-		Optional<Person> retreivedPerson = repository.findById(person.getId().toString());
-		assertTrue(retreivedPerson.get().getCars().size() == 2);
-		assertTrue(retreivedPerson.get().getCars().get(0).getColor().equals(Color.BLUE));
-		assertTrue(retreivedPerson.get().getCars().get(0).getManufacturer().equals(manufacturer));
-
-		retreivedPerson.get().getCars().remove(0);
-		repository.save(retreivedPerson.get());
-		Optional<Person> retreivedPerson1 = repository.findById(person.getId().toString());
-		assertTrue(retreivedPerson.get().getCars().size() == 1);
-		assertTrue(retreivedPerson1.get().getCars().get(0).getColor().equals(Color.RED));
-		assertTrue(retreivedPerson1.get().getCars().get(0).getManufacturer().equals(manufacturer1));
-	}
-
-	@Test
-	public void shouldFetchAggreation() {
-		Car car1 = new Car();
-		car1.setColor(Color.BLUE);
-		car1.setManufacturer("BMW");
-		Car car2 = new Car();
-		car2.setColor(Color.RED);
-		car2.setManufacturer("JAGUAR");
-		carRepository.save(car1);
-		carRepository.save(car2);
-		Person person = new Person();
-		person.setName("Dave");
-		person.setEmail("dave@mail.com");
-		person.setCars(Arrays.asList(new Car[] { car1, car2 }));
-		repository.save(person);
-
-		List<Person> findAll = repository.findAll();
-		assertTrue(findAll.get(0).getCars().size() == 2);
-	}
+    }
 
 }

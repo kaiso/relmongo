@@ -6,7 +6,11 @@ public class RelMongoProcessingException extends RuntimeException {
         super(string);
     }
 
-    /**
+    public RelMongoProcessingException(Exception e) {
+		super(e);
+	}
+
+	/**
      * 
      */
     private static final long serialVersionUID = 1L;
