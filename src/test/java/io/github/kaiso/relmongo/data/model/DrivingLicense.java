@@ -17,7 +17,7 @@ public class DrivingLicense {
     
     private String number;
     
-    @OneToOne(fetch=FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @OneToOne(fetch=FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinProperty(name = "state")
     private State state;
     

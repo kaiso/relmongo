@@ -26,45 +26,48 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Collection;
 
 public class PersistentPropertyCascadingCallback implements FieldCallback {
 
-    private Object source;
-    private MongoOperations mongoOperations;
-    private Operation operation;
+	private Object source;
+	private MongoOperations mongoOperations;
+	private Operation operation;
 
-    public PersistentPropertyCascadingCallback(Object source, MongoOperations mongoOperations, Operation operation) {
-        super();
-        this.source = source;
-        this.mongoOperations = mongoOperations;
-        this.operation = operation;
-    }
+	public PersistentPropertyCascadingCallback(Object source, MongoOperations mongoOperations, Operation operation) {
+		super();
+		this.source = source;
+		this.mongoOperations = mongoOperations;
+		this.operation = operation;
+	}
 
-    public void doWith(Field field) throws IllegalAccessException {
-        ReflectionUtils.makeAccessible(field);
-        if (field.isAnnotationPresent(OneToMany.class)) {
-            doCascade(field, field.getAnnotation(OneToMany.class).cascade(), OneToMany.class);
-        } else if (field.isAnnotationPresent(OneToOne.class)) {
-            doCascade(field, field.getAnnotation(OneToOne.class).cascade(), OneToOne.class);
-        }
+	public void doWith(Field field) throws IllegalAccessException {
+		ReflectionUtils.makeAccessible(field);
+		if (field.isAnnotationPresent(OneToMany.class)) {
+			doCascade(field, field.getAnnotation(OneToMany.class).cascade(), OneToMany.class);
+		} else if (field.isAnnotationPresent(OneToOne.class)) {
+			doCascade(field, field.getAnnotation(OneToOne.class).cascade(), OneToOne.class);
+		}
 
-    }
+	}
 
-    private void doCascade(Field field, CascadeType cascadeType, Class<?> annotation) throws IllegalAccessException {
-        Object child = field.get(source);
-        if (child != null) {
-            if (Collection.class.isAssignableFrom(child.getClass())) {
-                if (CascadeType.PERSIST.equals(cascadeType) && Operation.PERSIST.equals(operation)) {
-                    ((Collection<?>) child).parallelStream().forEach(mongoOperations::save);
-                }
-            } else {
-                if (CascadeType.PERSIST.equals(cascadeType) && Operation.PERSIST.equals(operation)) {
-                    mongoOperations.save(child);
-                }
-            }
-        }
+	private void doCascade(Field field, CascadeType cascadeType, Class<?> annotation) throws IllegalAccessException {
+		Object child = field.get(source);
+		if (child != null) {
+			if (Collection.class.isAssignableFrom(child.getClass())) {
+				if (Arrays.asList(CascadeType.PERSIST, CascadeType.ALL).contains(cascadeType)
+						&& Operation.PERSIST.equals(operation)) {
+					((Collection<?>) child).parallelStream().forEach(mongoOperations::save);
+				}
+			} else {
+				if (Arrays.asList(CascadeType.PERSIST, CascadeType.ALL).contains(cascadeType)
+						&& Operation.PERSIST.equals(operation)) {
+					mongoOperations.save(child);
+				}
+			}
+		}
 
-    }
+	}
 
 }

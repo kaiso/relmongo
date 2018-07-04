@@ -17,7 +17,7 @@ public class Person {
     private String name;
     private String email;
     
-    @OneToMany(fetch=FetchType.EAGER)
+    @OneToMany(fetch=FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinProperty(name="carsrefs")
     private List<Car> cars;
     
