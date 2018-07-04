@@ -14,6 +14,8 @@ RelMongo is built in top of the [Spring Data MongoDB](https://projects.spring.io
  - @EnableRelationalMongo to enable RelMongo annotations processing
  - @OneToMany annotation to address 1..N relations
  - @OneToOne annotation to address 1..1 relations
+ - Two fetching methods ( LAZY and EAGER)
+ - Cascading operations
  
 To get more details please see the [release notes](https://github.com/kaiso/relmongo/releases).
 # Wiki
@@ -45,7 +47,7 @@ given two concepts with "one to *" relation<br><br>
 
 on your Person mongo entity simply add the following annotations from RelMongo :
 ```
-    @OneToMany(fetch=FetchType.EAGER)
+    @OneToMany(fetch=FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinProperty(name="cars")
     private List<Car> cars;
 ```
@@ -62,7 +64,6 @@ test your code :
         car.setColor(Color.BLUE);
         String manufacturer = "BMW";
         car.setManufacturer(manufacturer);
-        carRepository.save(car);
         Person person = new Person();
         person.setName("person");
         person.setEmail("person@mail.com");
