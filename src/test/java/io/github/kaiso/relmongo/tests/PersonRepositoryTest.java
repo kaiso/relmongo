@@ -1,21 +1,5 @@
 package io.github.kaiso.relmongo.tests;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Optional;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.test.context.ContextConfiguration;
-
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
@@ -30,8 +14,26 @@ import io.github.kaiso.relmongo.data.repository.DrivingLicenseRepository;
 import io.github.kaiso.relmongo.data.repository.HouseRepository;
 import io.github.kaiso.relmongo.data.repository.PassportRepository;
 import io.github.kaiso.relmongo.data.repository.PersonRepository;
+import io.github.kaiso.relmongo.lazy.LazyLoadingProxy;
 import io.github.kaiso.relmongo.tests.common.AbstractBaseTest;
 import io.github.kaiso.relmongo.util.RelMongoConstants;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.test.context.ContextConfiguration;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ContextConfiguration(classes = { PersonRepositoryTest.class })
 public class PersonRepositoryTest extends AbstractBaseTest {
@@ -91,14 +93,14 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         person.setCars(Arrays.asList(new Car[] { car1, car2 }));
         repository.save(person);
 
-
-       DBObject document = mongoOperations.getCollection("people").find().iterator().next();
+        DBObject document = mongoOperations.getCollection("people").find().iterator().next();
         assertNull(document.get("cars"));
         DBObject obj = new BasicDBObject();
         obj.put("_id", car1.getId());
         obj.put(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME, "cars");
-        assertTrue(((Collection<?>)document.get("carsrefs")).size() == 2);
-        assertEquals(((Collection<?>)document.get("carsrefs")).iterator().next(), obj);
+        assertTrue(((Collection<?>) document.get("carsrefs")).size() == 2);
+        assertEquals(((Collection<?>) document.get("carsrefs")).iterator().next(), obj);
+
     }
 
     @Test
@@ -167,6 +169,7 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         Optional<Person> retreivedEmployee = repository.findById(employee.getId().toString());
         assertFalse(retreivedEmployee.get().getHouses().isEmpty());
         assertTrue(retreivedEmployee.get().getHouses().get(0).getAddress().equals("Paris"));
+        assertTrue(retreivedEmployee.get().getHouses() instanceof LazyLoadingProxy);
     }
 
     @Test
@@ -182,6 +185,7 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         Optional<Person> retreivedPerson = repository.findById(person.getId().toString());
         assertNotNull(retreivedPerson.get().getDrivingLicense());
         assertEquals(retreivedPerson.get().getDrivingLicense().getNumber(), "12345");
+        assertTrue(retreivedPerson.get().getDrivingLicense() instanceof LazyLoadingProxy);
     }
 
     @Test
@@ -296,6 +300,46 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         assertTrue(retreivedPerson.get().getCars().size() == 1);
         assertTrue(retreivedPerson1.get().getCars().get(0).getColor().equals(Color.RED));
         assertTrue(retreivedPerson1.get().getCars().get(0).getManufacturer().equals(manufacturer1));
+    }
+
+    @Test
+    public void shouldFetchAggreation() {
+        Car car1 = new Car();
+        car1.setColor(Color.BLUE);
+        car1.setManufacturer("BMW");
+        Car car2 = new Car();
+        car2.setColor(Color.RED);
+        car2.setManufacturer("JAGUAR");
+        carRepository.save(car1);
+        carRepository.save(car2);
+        Person person = new Person();
+        person.setName("Dave");
+        person.setEmail("dave@mail.com");
+        person.setCars(Arrays.asList(new Car[] { car1, car2 }));
+        repository.save(person);
+
+        List<Person> findAll = repository.findAll();
+        assertTrue(findAll.get(0).getCars().size() == 2);
+    }
+
+    @Test
+    public void shouldNotLazyLoadAggregation() {
+        House house = new House();
+        house.setAddress("Paris");
+
+        House house1 = new House();
+        house.setAddress("Tunis");
+
+        Person person = new Person();
+        person.setName("Dave");
+        person.setEmail("dave@mail.com");
+
+        person.setHouses(Arrays.asList(new House[] { house, house1 }));
+        repository.save(person);
+        List<Person> findAll = repository.findAll();
+        assertTrue(findAll.get(0) != null);
+        assertTrue(findAll.get(0).getHouses().size() == 2);
+        assertFalse(findAll.get(0).getHouses() instanceof LazyLoadingProxy);
     }
 
 }

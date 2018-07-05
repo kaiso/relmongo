@@ -1,5 +1,5 @@
 /**
-*   Copyright 2018 Kais OMRI and authors.
+*   Copyright 2018 Kais OMRI [kais.omri.int@gmail.com] and authors.
 *
 *   Licensed under the Apache License, Version 2.0 (the "License");
 *   you may not use this file except in compliance with the License.

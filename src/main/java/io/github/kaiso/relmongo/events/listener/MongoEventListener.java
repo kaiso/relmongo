@@ -16,7 +16,14 @@
 
 package io.github.kaiso.relmongo.events.listener;
 
-import java.util.List;
+import io.github.kaiso.relmongo.events.callback.PersistentPropertyCascadingCallback;
+import io.github.kaiso.relmongo.events.callback.PersistentPropertyConvertingCallback;
+import io.github.kaiso.relmongo.events.callback.PersistentPropertyLazyLoadingCallback;
+import io.github.kaiso.relmongo.events.callback.PersistentPropertyLoadingCallback;
+import io.github.kaiso.relmongo.events.callback.PersistentPropertySavingCallback;
+import io.github.kaiso.relmongo.model.LoadableObjectsMetadata;
+import io.github.kaiso.relmongo.mongo.Operation;
+import io.github.kaiso.relmongo.mongo.PersistentRelationResolver;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
@@ -28,59 +35,51 @@ import org.springframework.data.mongodb.core.mapping.event.BeforeConvertEvent;
 import org.springframework.data.mongodb.core.mapping.event.BeforeSaveEvent;
 import org.springframework.util.ReflectionUtils;
 
-import io.github.kaiso.relmongo.events.callback.PersistentPropertyCascadingCallback;
-import io.github.kaiso.relmongo.events.callback.PersistentPropertyConvertingCallback;
-import io.github.kaiso.relmongo.events.callback.PersistentPropertyLazyLoadingCallback;
-import io.github.kaiso.relmongo.events.callback.PersistentPropertyLoadingCallback;
-import io.github.kaiso.relmongo.events.callback.PersistentPropertySavingCallback;
-import io.github.kaiso.relmongo.model.LoadableObjectsMetadata;
-import io.github.kaiso.relmongo.mongo.Operation;
-import io.github.kaiso.relmongo.mongo.PersistentRelationResolver;
+import java.util.List;
 
 public class MongoEventListener extends AbstractMongoEventListener<Object> {
 
-	@Autowired
-	private MongoOperations mongoOperations;
+    @Autowired
+    private MongoOperations mongoOperations;
 
-	@Override
-	public void onAfterLoad(AfterLoadEvent<Object> event) {
-		PersistentPropertyLoadingCallback callback = new PersistentPropertyLoadingCallback(event.getSource());
-		ReflectionUtils.doWithFields(event.getType(), callback);
-		List<LoadableObjectsMetadata> loadableObjects = callback.getLoadableObjects();
-		if (!loadableObjects.isEmpty()) {
-			PersistentRelationResolver.resolveOnLoading(mongoOperations, loadableObjects, event.getSource());
-		}
-		super.onAfterLoad(event);
-	}
+    @Override
+    public void onAfterLoad(AfterLoadEvent<Object> event) {
+        PersistentPropertyLoadingCallback callback = new PersistentPropertyLoadingCallback(event.getSource());
+        ReflectionUtils.doWithFields(event.getType(), callback);
+        List<LoadableObjectsMetadata> loadableObjects = callback.getLoadableObjects();
+        if (!loadableObjects.isEmpty()) {
+            PersistentRelationResolver.resolveOnLoading(mongoOperations, loadableObjects, event.getSource());
+        }
+        super.onAfterLoad(event);
+    }
 
-	@Override
-	public void onBeforeSave(BeforeSaveEvent<Object> event) {
-		PersistentPropertySavingCallback callback = new PersistentPropertySavingCallback(event.getDBObject());
-		ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
-		super.onBeforeSave(event);
-	}
+    @Override
+    public void onBeforeSave(BeforeSaveEvent<Object> event) {
+        PersistentPropertySavingCallback callback = new PersistentPropertySavingCallback(event.getDBObject());
+        ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
+        super.onBeforeSave(event);
+    }
 
-	@Override
-	public void onBeforeConvert(BeforeConvertEvent<Object> event) {
-		super.onBeforeConvert(event);
-		PersistentPropertyConvertingCallback callback = new PersistentPropertyConvertingCallback(event.getSource());
-		ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
-	}
-	@Override
-	public void onAfterConvert(AfterConvertEvent<Object> event) {
-		PersistentPropertyLazyLoadingCallback callback = new PersistentPropertyLazyLoadingCallback(event.getSource(),
-				mongoOperations);
-		ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
-		super.onAfterConvert(event);
-	}
+    @Override
+    public void onBeforeConvert(BeforeConvertEvent<Object> event) {
+        super.onBeforeConvert(event);
+        PersistentPropertyConvertingCallback callback = new PersistentPropertyConvertingCallback(event.getSource());
+        ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
+    }
 
-	@Override
-	public void onAfterSave(AfterSaveEvent<Object> event) {
-		super.onAfterSave(event);
-		PersistentPropertyCascadingCallback callback = new PersistentPropertyCascadingCallback(event.getSource(),
-				mongoOperations, Operation.PERSIST);
-		ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
+    @Override
+    public void onAfterConvert(AfterConvertEvent<Object> event) {
+        PersistentPropertyLazyLoadingCallback callback = new PersistentPropertyLazyLoadingCallback(event.getSource(), event.getDBObject(), mongoOperations);
+        ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
+        super.onAfterConvert(event);
+    }
 
-	}
+    @Override
+    public void onAfterSave(AfterSaveEvent<Object> event) {
+        super.onAfterSave(event);
+        PersistentPropertyCascadingCallback callback = new PersistentPropertyCascadingCallback(event.getSource(), mongoOperations, Operation.PERSIST);
+        ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
+
+    }
 
 }
