@@ -1,56 +1,39 @@
 package io.github.kaiso.relmongo.lazy;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
+import io.github.kaiso.relmongo.mongo.DatabaseOperations;
 
 import org.bson.types.ObjectId;
 import org.springframework.cglib.proxy.LazyLoader;
 import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.util.ReflectionUtils;
 
-import io.github.kaiso.relmongo.exception.RelMongoConfigurationException;
-import io.github.kaiso.relmongo.mongo.DatabaseOperations;
-import io.github.kaiso.relmongo.util.ObjectIdReaderCallback;
+import java.util.Collection;
+import java.util.List;
 
 public class RelMongoLazyLoader implements LazyLoader {
 
-    private Object original;
+    private List<Object> ids;
     private MongoOperations mongoOperations;
+    private Class<?> targetClass;
+    private Class<?> fieldType;
 
-    public RelMongoLazyLoader(Object original, MongoOperations mongoOperations) {
+    public RelMongoLazyLoader(List<Object> ids, MongoOperations mongoOperations, Class<?> targetClass, Class<?> fieldType) {
         super();
-        this.original = original;
+        this.ids = ids;
         this.mongoOperations = mongoOperations;
+        this.targetClass = targetClass;
+        this.fieldType = fieldType;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Object loadObject() throws Exception {
-        if (!(original instanceof LazyLoadingProxy)) {
-            if (Collection.class.isAssignableFrom(original.getClass())) {
-                List<ObjectId> idlist = (List<ObjectId>) ((Collection) original).stream().map(this::getIdFromObject).collect(Collectors.toList());
-                if (!idlist.isEmpty()) {
-                    return DatabaseOperations.findByIds(mongoOperations, ((Collection) original).iterator().next().getClass(),
-                            idlist.toArray(new ObjectId[idlist.size()]));
-                }
+        if (!ids.isEmpty()) {
+            if (Collection.class.isAssignableFrom(fieldType)) {
+                return DatabaseOperations.findByIds(mongoOperations, targetClass, ids.toArray(new ObjectId[ids.size()]));
             } else {
-                return DatabaseOperations.findByPropertyValue(mongoOperations, original.getClass(), "_id", getIdFromObject(original));
+                return DatabaseOperations.findByPropertyValue(mongoOperations, targetClass, "_id", ids.get(0));
             }
         }
         return null;
     }
-
-    private ObjectId getIdFromObject(Object obj) {
-
-        ObjectIdReaderCallback objectIdReaderCallback = new ObjectIdReaderCallback(obj);
-        ReflectionUtils.doWithFields(obj.getClass(), objectIdReaderCallback);
-        return objectIdReaderCallback.getObjectId()
-                .orElseThrow(() ->  new RelMongoConfigurationException("the Id field of class [" + obj.getClass()
-				+ "] must be annotated by @Id (org.springframework.data.annotation.Id)"));
-
-    }
-
-   
 
 }

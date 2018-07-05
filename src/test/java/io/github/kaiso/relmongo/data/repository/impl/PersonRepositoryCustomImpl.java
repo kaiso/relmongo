@@ -1,17 +1,15 @@
 package io.github.kaiso.relmongo.data.repository.impl;
 
-import java.util.List;
+import io.github.kaiso.relmongo.data.model.Person;
+import io.github.kaiso.relmongo.data.repository.PersonRepositoryCustom;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.aggregation.LookupOperation;
-import org.springframework.data.mongodb.core.query.Criteria;
 
-import io.github.kaiso.relmongo.data.model.Color;
-import io.github.kaiso.relmongo.data.model.Person;
-import io.github.kaiso.relmongo.data.repository.PersonRepositoryCustom;
+import java.util.List;
 
 public class PersonRepositoryCustomImpl implements PersonRepositoryCustom {
 
@@ -27,9 +25,12 @@ public class PersonRepositoryCustomImpl implements PersonRepositoryCustom {
 	public List<Person> findAll() {
 		LookupOperation lookup = LookupOperation.newLookup().from("cars").localField("carsrefs._id").foreignField("_id")
 				.as("cars");
+		
+		LookupOperation lookupHouses = LookupOperation.newLookup().from("houses").localField("housesrefs._id").foreignField("_id")
+                .as("houses");
 
 		AggregationResults<Person> result = mongoTemplate.aggregate(
-				Aggregation.newAggregation(lookup), "people",
+				Aggregation.newAggregation(lookup, lookupHouses), "people",
 				Person.class);
 
 		return result.getMappedResults();

@@ -16,9 +16,10 @@
 
 package io.github.kaiso.relmongo.mongo;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
+import io.github.kaiso.relmongo.annotation.FetchType;
+import io.github.kaiso.relmongo.lazy.LazyLoadingProxy;
+import io.github.kaiso.relmongo.lazy.RelMongoLazyLoader;
+import io.github.kaiso.relmongo.model.LoadableObjectsMetadata;
 
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.cglib.proxy.Factory;
@@ -27,11 +28,9 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.objenesis.ObjenesisStd;
 
-import io.github.kaiso.relmongo.annotation.FetchType;
-import io.github.kaiso.relmongo.lazy.LazyLoadingProxy;
-import io.github.kaiso.relmongo.lazy.RelMongoLazyLoader;
-import io.github.kaiso.relmongo.model.LoadableObjectsMetadata;
-import io.github.kaiso.relmongo.util.RelMongoConstants;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public final class PersistentRelationResolver {
 
@@ -44,65 +43,33 @@ public final class PersistentRelationResolver {
     public static void resolveOnLoading(MongoOperations mongoOperations, List<LoadableObjectsMetadata> loadableObjects, org.bson.Document document) {
         for (LoadableObjectsMetadata relation : loadableObjects) {
             String collection = relation.getTargetAssociationClass().getAnnotation(Document.class).collection();
-            if(collection == null || "".equals(collection)) {
-            	   collection = relation.getTargetAssociationClass().getSimpleName().toLowerCase();
+            if (collection == null || "".equals(collection)) {
+                collection = relation.getTargetAssociationClass().getSimpleName().toLowerCase();
             }
-            if (relation.getObjectIds() instanceof Collection && hasToLoad((Collection<?>) relation.getObjectIds())) {
-                if (FetchType.EAGER.equals(relation.getFetchType())) {
-                    List<Object> identifierList = ((Collection<?>) relation.getObjectIds()).stream().map(PersistentRelationResolver::mapIdentifier)
+            if (FetchType.EAGER.equals(relation.getFetchType())) {
+                if (relation.getObjectIds() instanceof Collection) {
+                    List<Object> identifierList = ((Collection<?>) relation.getObjectIds()).stream().map(DocumentUtils::mapIdentifier)
                             .collect(Collectors.toList());
                     document.put(relation.getFieldName(), DatabaseOperations.getDocumentsById(mongoOperations, identifierList, collection));
-                } else {
-                    document.put(relation.getFieldName(), relation.getObjectIds());
-                }
-            } else if (relation.getObjectIds() instanceof org.bson.Document && hasToLoad((org.bson.Document) relation.getObjectIds())) {
-                if (FetchType.EAGER.equals(relation.getFetchType())) {
-                    document.put(relation.getFieldName(), DatabaseOperations.getDocumentByPropertyValue(mongoOperations, mapIdentifier(relation.getObjectIds()),
-                            relation.getReferencedPropertyName(), collection));
-                } else {
-                    document.put(relation.getFieldName(), relation.getObjectIds());
+                } else if (relation.getObjectIds() instanceof org.bson.Document) {
+                    document.put(relation.getFieldName(), DatabaseOperations.getDocumentByPropertyValue(mongoOperations,
+                            DocumentUtils.mapIdentifier(relation.getObjectIds()), relation.getReferencedPropertyName(), collection));
                 }
             }
         }
 
     }
 
-    public static Object lazyLoader(Class<?> type, Object original, MongoOperations mongoOperations) {
-        if (original == null)
-            return null;
+    public static Object lazyLoader(Class<?> type, MongoOperations mongoOperations, List<Object> ids, Class<?> targetClass) {
         Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(original.getClass());
-        RelMongoLazyLoader lazyLoader = new RelMongoLazyLoader(original, mongoOperations);
+        enhancer.setSuperclass(targetClass);
+        RelMongoLazyLoader lazyLoader = new RelMongoLazyLoader(ids, mongoOperations, targetClass, type);
         enhancer.setCallback(lazyLoader);
         enhancer.setInterfaces(new Class[] { LazyLoadingProxy.class, type.isInterface() ? type : NoOp.class });
         enhancer.create();
         @SuppressWarnings("unchecked")
         Factory factory = (Factory) objenesisStd.newInstance(enhancer.createClass());
         return factory.newInstance(lazyLoader);
-    }
-
-    private static boolean hasToLoad(Collection<?> objects) {
-        // the last contition verifies if the objects were already laoded by another
-        // query
-        if (objects.isEmpty())
-            return false;
-        org.bson.Document document = (org.bson.Document) objects.iterator().next();
-        return hasToLoad(document);
-    }
-
-    /**
-     * checks if an object is already populated to be loaded anther time or not
-     * 
-     * @param document
-     * @return
-     */
-    private static boolean hasToLoad(org.bson.Document document) {
-        int propscount = document.get(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME) == null ? 1 : 2;
-        return document.size() <= propscount;
-    }
-
-    public static Object mapIdentifier(Object object) {
-        return ((org.bson.Document) object).getObjectId("_id");
     }
 
 }
