@@ -79,7 +79,8 @@ public class PersistentPropertyLazyLoadingCallback implements FieldCallback {
             } else {
                 identifierList.add(DocumentUtils.mapIdentifier(relations));
             }
-            field.set(source, PersistentRelationResolver.lazyLoader(field.getType(), mongoOperations, identifierList, ReflectionsUtil.getGenericType(field)));
+            field.set(source, PersistentRelationResolver.lazyLoader(field.getType(), mongoOperations, identifierList, ReflectionsUtil.getGenericType(field),
+                    field.get(source)));
 
         }
 

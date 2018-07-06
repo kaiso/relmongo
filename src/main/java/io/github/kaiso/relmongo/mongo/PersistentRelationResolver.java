@@ -53,7 +53,7 @@ public final class PersistentRelationResolver {
                     List<Object> identifierList = ((Collection<?>) relation.getObjectIds()).stream().map(DocumentUtils::mapIdentifier)
                             .collect(Collectors.toList());
                     document.put(relation.getFieldName(), DatabaseOperations.getDocumentsById(mongoOperations, identifierList, collection));
-                } else if (relation.getObjectIds() instanceof org.bson.Document) {
+                } else if (relation.getObjectIds() instanceof DBObject) {
                     document.put(relation.getFieldName(), DatabaseOperations.getDocumentByPropertyValue(mongoOperations,
                             DocumentUtils.mapIdentifier(relation.getObjectIds()), relation.getReferencedPropertyName(), collection));
                 }
@@ -62,10 +62,10 @@ public final class PersistentRelationResolver {
 
     }
 
-    public static Object lazyLoader(Class<?> type, MongoOperations mongoOperations, List<Object> ids, Class<?> targetClass) {
+    public static Object lazyLoader(Class<?> type, MongoOperations mongoOperations, List<Object> ids, Class<?> targetClass, Object original) {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(targetClass);
-        RelMongoLazyLoader lazyLoader = new RelMongoLazyLoader(ids, mongoOperations, targetClass, type);
+        RelMongoLazyLoader lazyLoader = new RelMongoLazyLoader(ids, mongoOperations, targetClass, type, original);
         enhancer.setCallback(lazyLoader);
         enhancer.setInterfaces(new Class[] { LazyLoadingProxy.class, type.isInterface() ? type : NoOp.class });
         enhancer.create();
