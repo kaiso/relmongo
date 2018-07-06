@@ -15,25 +15,27 @@ public class RelMongoLazyLoader implements LazyLoader {
     private MongoOperations mongoOperations;
     private Class<?> targetClass;
     private Class<?> fieldType;
+    private Object original;
 
-    public RelMongoLazyLoader(List<Object> ids, MongoOperations mongoOperations, Class<?> targetClass, Class<?> fieldType) {
+    public RelMongoLazyLoader(List<Object> ids, MongoOperations mongoOperations, Class<?> targetClass, Class<?> fieldType, Object original) {
         super();
         this.ids = ids;
         this.mongoOperations = mongoOperations;
         this.targetClass = targetClass;
         this.fieldType = fieldType;
+        this.original = original;
     }
 
     @Override
     public Object loadObject() throws Exception {
-        if (!ids.isEmpty()) {
+        if (!(original instanceof LazyLoadingProxy) && !ids.isEmpty()) {
             if (Collection.class.isAssignableFrom(fieldType)) {
                 return DatabaseOperations.findByIds(mongoOperations, targetClass, ids.toArray(new ObjectId[ids.size()]));
             } else {
                 return DatabaseOperations.findByPropertyValue(mongoOperations, targetClass, "_id", ids.get(0));
             }
         }
-        return null;
+        return original;
     }
 
 }

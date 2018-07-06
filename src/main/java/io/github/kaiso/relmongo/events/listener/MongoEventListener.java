@@ -16,13 +16,13 @@
 
 package io.github.kaiso.relmongo.events.listener;
 
-import io.github.kaiso.relmongo.events.callback.PersistentPropertyCascadingCallback;
+import io.github.kaiso.relmongo.events.callback.PersistentPropertyCascadingRemoveCallback;
+import io.github.kaiso.relmongo.events.callback.PersistentPropertyCascadingSaveCallback;
 import io.github.kaiso.relmongo.events.callback.PersistentPropertyConvertingCallback;
 import io.github.kaiso.relmongo.events.callback.PersistentPropertyLazyLoadingCallback;
 import io.github.kaiso.relmongo.events.callback.PersistentPropertyLoadingCallback;
 import io.github.kaiso.relmongo.events.callback.PersistentPropertySavingCallback;
 import io.github.kaiso.relmongo.model.LoadableObjectsMetadata;
-import io.github.kaiso.relmongo.mongo.Operation;
 import io.github.kaiso.relmongo.mongo.PersistentRelationResolver;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +32,7 @@ import org.springframework.data.mongodb.core.mapping.event.AfterConvertEvent;
 import org.springframework.data.mongodb.core.mapping.event.AfterLoadEvent;
 import org.springframework.data.mongodb.core.mapping.event.AfterSaveEvent;
 import org.springframework.data.mongodb.core.mapping.event.BeforeConvertEvent;
+import org.springframework.data.mongodb.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.data.mongodb.core.mapping.event.BeforeSaveEvent;
 import org.springframework.util.ReflectionUtils;
 
@@ -78,9 +79,17 @@ public class MongoEventListener extends AbstractMongoEventListener<Object> {
     @Override
     public void onAfterSave(AfterSaveEvent<Object> event) {
         super.onAfterSave(event);
-        PersistentPropertyCascadingCallback callback = new PersistentPropertyCascadingCallback(event.getSource(), mongoOperations, Operation.PERSIST);
+        PersistentPropertyCascadingSaveCallback callback = new PersistentPropertyCascadingSaveCallback(event.getSource(), mongoOperations);
         ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
 
+    }
+
+    @Override
+    public void onBeforeDelete(BeforeDeleteEvent<Object> event) {
+        super.onBeforeDelete(event);
+        PersistentPropertyCascadingRemoveCallback callback = new PersistentPropertyCascadingRemoveCallback(event.getDocument(), mongoOperations,
+                event.getType());
+        callback.doProcessing();
     }
 
 }

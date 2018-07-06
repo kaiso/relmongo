@@ -26,6 +26,11 @@ public enum CascadeType {
     PERSIST,
     
     /**
+     * Cascade remove operation
+     */
+    REMOVE,
+    
+    /**
      * Cascade ALL operations
      */
     ALL,
