@@ -28,14 +28,15 @@ public class RelMongoLazyLoader implements LazyLoader {
 
     @Override
     public Object loadObject() throws Exception {
+        Object result = null;
         if (!(original instanceof LazyLoadingProxy) && !ids.isEmpty()) {
             if (Collection.class.isAssignableFrom(fieldType)) {
-                return DatabaseOperations.findByIds(mongoOperations, targetClass, ids.toArray(new ObjectId[ids.size()]));
+                result = DatabaseOperations.findByIds(mongoOperations, targetClass, ids.toArray(new ObjectId[ids.size()]));
             } else {
-                return DatabaseOperations.findByPropertyValue(mongoOperations, targetClass, "_id", ids.get(0));
+                result = DatabaseOperations.findByPropertyValue(mongoOperations, targetClass, "_id", ids.get(0));
             }
         }
-        return original;
+        return result != null ? result : original;
     }
 
 }

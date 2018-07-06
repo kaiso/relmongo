@@ -18,6 +18,7 @@ package io.github.kaiso.relmongo.events.callback;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 
 import io.github.kaiso.relmongo.annotation.FetchType;
 import io.github.kaiso.relmongo.annotation.JoinProperty;
@@ -70,7 +71,7 @@ public class PersistentPropertyLoadingCallback implements FieldCallback {
 
             ids = ((BasicDBObject) source).get(name);
 
-            if (DocumentUtils.isLoaded(((BasicDBObject) source).get(field.getName())) || ids == null) {
+            if (DocumentUtils.isLoaded(((BasicDBObject) source).get(field.getName())) || ids == null || ((DBObject)ids).keySet().isEmpty()) {
                 return;
             }
 
