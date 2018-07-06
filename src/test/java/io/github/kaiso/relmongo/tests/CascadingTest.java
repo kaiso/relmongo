@@ -83,6 +83,7 @@ public class CascadingTest extends AbstractBaseTest {
 
             @Override
             public void accept(DBObject t) {
+
                 count.incrementAndGet();
                 drvDoc.set(t);
             }
@@ -135,6 +136,48 @@ public class CascadingTest extends AbstractBaseTest {
         assertTrue(carsDocuments.get().stream().map((item) -> {
             return item.get("_id");
         }).collect(Collectors.toList()).contains(car1.getId()));
+
+    }
+
+    @Test
+    public void shouldCascadeRemoveCollection() {
+        Car car1 = new Car();
+        car1.setColor(Color.BLUE);
+        car1.setManufacturer("BMW");
+
+        Car car2 = new Car();
+        car2.setColor(Color.BLUE);
+        car2.setManufacturer("BMW");
+
+        Person person1 = new Person();
+        person1.setName("Kais");
+        person1.setEmail("kais.omri.int@gmail.com");
+        person1.setCars(Arrays.asList(new Car[] { car1 }));
+        repository.save(person1);
+
+        Person person2 = new Person();
+        person2.setName("Dave");
+        person2.setEmail("dave@mail.com");
+        person2.setCars(Arrays.asList(new Car[] { car2 }));
+        repository.save(person2);
+
+        repository.delete(person2);
+
+        DBCursor cars = mongoOperations.getCollection("cars").find();
+        AtomicInteger count = new AtomicInteger(0);
+        AtomicReference<List<DBObject>> carsDocuments = new AtomicReference<>(new ArrayList<>());
+        Consumer<DBObject> filter = new Consumer<DBObject>() {
+
+            @Override
+            public void accept(DBObject t) {
+                count.incrementAndGet();
+                carsDocuments.get().add(t);
+            }
+        };
+        cars.forEach(filter);
+        assertTrue(carsDocuments.get().size() == 1);
+
+        assertTrue(carsDocuments.get().get(0).get("_id").equals(car1.getId()));
 
     }
 

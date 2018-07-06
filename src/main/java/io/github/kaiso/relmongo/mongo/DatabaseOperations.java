@@ -60,7 +60,7 @@ public final class DatabaseOperations {
         return mongoOperations.find(query, clazz);
     }
 
-    public static <T> T findByPropertyValue(MongoOperations mongoOperations, Class<T> clazz, String propertyName, ObjectId value) {
+    public static <T> T findByPropertyValue(MongoOperations mongoOperations, Class<T> clazz, String propertyName, Object value) {
         Query query = new Query();
         query.addCriteria(Criteria.where(propertyName).is(value));
         return mongoOperations.findOne(query, clazz);

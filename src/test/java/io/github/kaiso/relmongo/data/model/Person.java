@@ -21,7 +21,7 @@ public class Person {
     @JoinProperty(name="carsrefs")
     private List<Car> cars;
     
-    @OneToMany(fetch=FetchType.LAZY)
+    @OneToMany(fetch=FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinProperty(name="housesrefs")
     private List<House> houses;
     

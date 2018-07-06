@@ -23,7 +23,9 @@ import io.github.kaiso.relmongo.annotation.FetchType;
 import io.github.kaiso.relmongo.annotation.JoinProperty;
 import io.github.kaiso.relmongo.annotation.OneToMany;
 import io.github.kaiso.relmongo.annotation.OneToOne;
+import io.github.kaiso.relmongo.exception.RelMongoConfigurationException;
 import io.github.kaiso.relmongo.model.LoadableObjectsMetadata;
+import io.github.kaiso.relmongo.mongo.DocumentUtils;
 import io.github.kaiso.relmongo.util.ReflectionsUtil;
 
 import org.springframework.util.ReflectionUtils;
@@ -65,7 +67,13 @@ public class PersistentPropertyLoadingCallback implements FieldCallback {
         }
         Object ids = null;
         try {
+
             ids = ((BasicDBObject) source).get(name);
+
+            if (DocumentUtils.isLoaded(((BasicDBObject) source).get(field.getName())) || ids == null) {
+                return;
+            }
+
             if (OneToOne.class.equals(annotation) && ids instanceof BasicDBList) {
                 // mongo database lookups return always an array if unwind is not used event if
                 // it is a one ot one association
@@ -73,7 +81,7 @@ public class PersistentPropertyLoadingCallback implements FieldCallback {
                 ids = list.isEmpty() ? list : list.get(0);
             }
         } catch (Exception e) {
-            throw new IllegalArgumentException("Property defined in @JoinProperty annotation is not present", e);
+            throw new RelMongoConfigurationException("Property defined in @JoinProperty annotation is not present", e);
         }
 
         loadableObjects.add(new LoadableObjectsMetadata(field.getName(), name, "_id", ReflectionsUtil.getGenericType(field), fetchType, ids));
