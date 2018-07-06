@@ -27,6 +27,7 @@ import io.github.kaiso.relmongo.model.LoadableObjectsMetadata;
 import io.github.kaiso.relmongo.mongo.DocumentUtils;
 import io.github.kaiso.relmongo.util.ReflectionsUtil;
 
+import org.bson.Document;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
@@ -68,7 +69,8 @@ public class PersistentPropertyLoadingCallback implements FieldCallback {
         try {
             ids = ((org.bson.Document) source).get(name);
 
-            if (DocumentUtils.isLoaded(((org.bson.Document) source).get(field.getName())) || ids == null) {
+            if (DocumentUtils.isLoaded(((org.bson.Document) source).get(field.getName())) || ids == null
+                    || (ids instanceof Document && ((Document) ids).keySet().isEmpty())) {
                 return;
             }
 

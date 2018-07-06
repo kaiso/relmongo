@@ -70,7 +70,7 @@ public class PersistentPropertyLazyLoadingCallback implements FieldCallback {
 
             Object relations = document.get(joinPropertyName);
             List<Object> identifierList = new ArrayList<>();
-            if (relations == null) {
+            if (relations == null || (relations instanceof Document && ((Document)relations).keySet().isEmpty())) {
                 return;
             }
             if (relations instanceof Collection) {
