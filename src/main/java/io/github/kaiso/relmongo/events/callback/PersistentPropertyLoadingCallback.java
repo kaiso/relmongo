@@ -71,7 +71,7 @@ public class PersistentPropertyLoadingCallback implements FieldCallback {
 
             ids = ((BasicDBObject) source).get(name);
 
-            if (DocumentUtils.isLoaded(((BasicDBObject) source).get(field.getName())) || ids == null || ((DBObject)ids).keySet().isEmpty()) {
+            if (ids == null || DocumentUtils.isLoaded(((BasicDBObject) source).get(field.getName())) || ((DBObject)ids).keySet().isEmpty()) {
                 return;
             }
 
