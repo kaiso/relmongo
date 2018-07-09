@@ -39,8 +39,11 @@ public final class DocumentUtils {
     public static boolean isLoaded(Object obj) {
         if (obj != null) {
             if (Collection.class.isAssignableFrom(obj.getClass()) && !((Collection<?>) obj).isEmpty()) {
-                return isDBObjectLoaded((DBObject) ((Collection<?>) obj).iterator().next());
-            } else {
+                Object document = ((Collection<?>) obj).iterator().next();
+                if (document instanceof DBObject) {
+                    return isDBObjectLoaded((DBObject) document);
+                }
+            } else if (obj instanceof DBObject) {
                 return isDBObjectLoaded((DBObject) obj);
             }
         }
