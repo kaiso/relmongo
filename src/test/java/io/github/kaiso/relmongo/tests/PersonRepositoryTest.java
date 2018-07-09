@@ -114,13 +114,12 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         person.setPassport(passport);
         repository.save(person);
         DBObject personNoRelational = mongoOperations.getCollection("people").find().next();
-        assertNull(personNoRelational.get("passport"));
         System.out.println("db id" + personNoRelational.get("passportId"));
         System.out.println("relational id" + passport.getId());
         BasicDBObject obj = new BasicDBObject();
         obj.put("_id", passport.getId());
         obj.put(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME, "passport");
-        assertEquals(personNoRelational.get("passportref"), obj);
+        assertEquals(personNoRelational.get("passport"), obj);
     }
 
     @Test

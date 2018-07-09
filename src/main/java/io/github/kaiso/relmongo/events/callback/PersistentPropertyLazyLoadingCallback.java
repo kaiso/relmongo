@@ -53,12 +53,13 @@ public class PersistentPropertyLazyLoadingCallback implements FieldCallback {
     public void doWith(Field field) throws IllegalAccessException {
         ReflectionUtils.makeAccessible(field);
 
-        if (DocumentUtils.isLoaded(document.get(field.getName()))) {
-            return;
-        }
-
         if ((field.isAnnotationPresent(OneToMany.class) && FetchType.LAZY.equals(field.getAnnotation(OneToMany.class).fetch()))
                 || (field.isAnnotationPresent(OneToOne.class) && FetchType.LAZY.equals(field.getAnnotation(OneToOne.class).fetch()))) {
+            
+            if (DocumentUtils.isLoaded(document.get(field.getName()))) {
+                return;
+            }
+            
             String joinPropertyName;
             try {
                 joinPropertyName = field.getAnnotation(JoinProperty.class).name();

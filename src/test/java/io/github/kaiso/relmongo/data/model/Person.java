@@ -27,7 +27,7 @@ public class Person {
     private List<House> houses = new ArrayList<>();
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinProperty(name = "passportref")
+    @JoinProperty(name = "passport")
     private Passport passport;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
