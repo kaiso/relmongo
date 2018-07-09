@@ -15,14 +15,14 @@
 */
 package io.github.kaiso.relmongo.mongo;
 
+import io.github.kaiso.relmongo.util.RelMongoConstants;
+
+import org.bson.Document;
 import org.bson.types.ObjectId;
 
 import java.util.Collection;
 
 public final class DocumentUtils {
-    
-    
-    
 
     private DocumentUtils() {
         super();
@@ -35,10 +35,30 @@ public final class DocumentUtils {
      * @return
      */
     public static boolean isLoaded(Object obj) {
-        return (obj != null && Collection.class.isAssignableFrom(obj.getClass()) && !((Collection<?>) obj).isEmpty()) || (obj != null);
+        if (obj != null) {
+            if (Collection.class.isAssignableFrom(obj.getClass()) && !((Collection<?>) obj).isEmpty()) {
+                Object document = ((Collection<?>) obj).iterator().next();
+                if (document instanceof Document) {
+                    return isDocumentLoaded((Document) document);
+                }
+            } else if (obj instanceof Document) {
+                return isDocumentLoaded((Document) obj);
+            }
+        }
+        return false;
     }
-    
-    
+
+    private static boolean isDocumentLoaded(Document dbObject) {
+        int counter = 0;
+        if (dbObject.containsKey("_id")) {
+            counter++;
+        }
+        if (dbObject.containsKey(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME)) {
+            counter++;
+        }
+        return dbObject.keySet().size() > counter;
+    }
+
     public static ObjectId mapIdentifier(Object object) {
         return ((org.bson.Document) object).getObjectId("_id");
     }

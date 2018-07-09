@@ -69,7 +69,7 @@ public class PersistentPropertyLoadingCallback implements FieldCallback {
         try {
             ids = ((org.bson.Document) source).get(name);
 
-            if (DocumentUtils.isLoaded(((org.bson.Document) source).get(field.getName())) || ids == null
+            if (ids == null || DocumentUtils.isLoaded(((org.bson.Document) source).get(field.getName()))
                     || (ids instanceof Document && ((Document) ids).keySet().isEmpty())) {
                 return;
             }
