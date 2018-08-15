@@ -60,10 +60,12 @@ public final class PersistentRelationResolver {
 
     }
 
-    public static Object lazyLoader(Class<?> type, MongoOperations mongoOperations, List<Object> ids, Class<?> targetClass, Object original) {
+    public static Object lazyLoader(Class<?> type, MongoOperations mongoOperations, List<Object> ids,
+            String property, Class<?> targetClass, Object original, Object parent, String fieldName) {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(targetClass);
-        RelMongoLazyLoader lazyLoader = new RelMongoLazyLoader(ids, mongoOperations, targetClass, type, original);
+        RelMongoLazyLoader lazyLoader = new RelMongoLazyLoader(ids, property, mongoOperations,
+                targetClass, type, fieldName, original, parent);
         enhancer.setCallback(lazyLoader);
         enhancer.setInterfaces(new Class[] { LazyLoadingProxy.class, type.isInterface() ? type : NoOp.class });
         enhancer.create();

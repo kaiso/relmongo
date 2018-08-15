@@ -1,5 +1,7 @@
 package io.github.kaiso.relmongo.data.model;
 
+import io.github.kaiso.relmongo.annotation.ManyToOne;
+
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -11,6 +13,10 @@ public class Car {
     private ObjectId id;
     private String manufacturer;
     private Color color;
+    
+    @ManyToOne(mappedBy="cars")
+    private Person owner;
+    
     public ObjectId getId() {
         return id;
     }
@@ -28,6 +34,12 @@ public class Car {
     }
     public void setColor(Color color) {
         this.color = color;
+    }
+    public Person getOwner() {
+        return owner;
+    }
+    public void setOwner(Person owner) {
+        this.owner = owner;
     }
     
     

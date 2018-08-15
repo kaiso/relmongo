@@ -15,51 +15,54 @@
 */
 package io.github.kaiso.relmongo.util;
 
-import java.lang.reflect.Field;
-import java.util.Optional;
-
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
+import java.lang.reflect.Field;
+import java.util.Optional;
+
+/**
+ * @author Kais OMRI
+ */
 public class ObjectIdReaderCallback implements FieldCallback {
 
-	private ObjectId objectId;
-	private Field idField;
-	private Object source;
+    private ObjectId objectId;
+    private Field idField;
+    private Object source;
 
-	public ObjectIdReaderCallback(Object source) {
-		this.source = source;
-	}
+    public ObjectIdReaderCallback(Object source) {
+        this.source = source;
+    }
 
-	@Override
-	public void doWith(Field field) throws IllegalAccessException {
-		if (field.isAnnotationPresent(Id.class)) {
-			ReflectionUtils.makeAccessible(field);
-			try {
-				Object value = field.get(source);
-				if (value instanceof String) {
-					objectId = new ObjectId((String) value);
-				} else {
-					objectId = (ObjectId) value;
-				}
-				this.idField = field;
-			} catch (IllegalArgumentException | IllegalAccessException e) {
-				throw new IllegalStateException("unable to access the @Id field", e);
-			} catch (ClassCastException e) {
-				throw new IllegalStateException("the @Id field must be of type ObjectId or String", e);
-			}
-		}
+    @Override
+    public void doWith(Field field) throws IllegalAccessException {
+        if (field.isAnnotationPresent(Id.class)) {
+            ReflectionUtils.makeAccessible(field);
+            try {
+                Object value = field.get(source);
+                if (value instanceof String) {
+                    objectId = new ObjectId((String) value);
+                } else {
+                    objectId = (ObjectId) value;
+                }
+                this.idField = field;
+            } catch (IllegalArgumentException | IllegalAccessException e) {
+                throw new IllegalStateException("unable to access the @Id field", e);
+            } catch (ClassCastException e) {
+                throw new IllegalStateException("the @Id field must be of type ObjectId or String", e);
+            }
+        }
 
-	}
+    }
 
-	public Optional<ObjectId> getObjectId() {
-		return Optional.ofNullable(objectId);
-	}
+    public Optional<ObjectId> getObjectId() {
+        return Optional.ofNullable(objectId);
+    }
 
-	public Field getIdField() {
-		return idField;
-	}
+    public Field getIdField() {
+        return idField;
+    }
 
 }

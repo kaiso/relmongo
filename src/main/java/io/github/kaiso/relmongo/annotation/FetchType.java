@@ -15,7 +15,13 @@
 */
 
 package io.github.kaiso.relmongo.annotation;
-
+/**
+ * Defines strategies for fetching data from the database. 
+ * The EAGER strategy is a requirement on RelMongo that data must be eagerly fetched. 
+ * The LAZY strategy is a hint to RelMongo that data should be fetched lazily when it is first accessed.
+ * @author Kais OMRI
+ *
+ */
 public enum FetchType {
     LAZY, EAGER;
 }

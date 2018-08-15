@@ -14,33 +14,46 @@ public class DrivingLicense {
 
     @Id
     private ObjectId id;
-    
+
     private String number;
-    
-    @OneToOne(fetch=FetchType.LAZY, cascade = CascadeType.ALL)
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinProperty(name = "state")
     private State state;
-    
+
+    @OneToOne(mappedBy = "drivingLicense", fetch = FetchType.LAZY)
+    private Person owner;
+
     public ObjectId getId() {
         return id;
     }
+
     public void setId(ObjectId id) {
         this.id = id;
     }
+
     public String getNumber() {
         return number;
     }
+
     public void setNumber(String number) {
         this.number = number;
     }
+
     public State getState() {
         return state;
     }
+
     public void setState(State state) {
         this.state = state;
     }
-        
-    
-    
-    
+
+    public Person getOwner() {
+        return owner;
+    }
+
+    public void setOwner(Person owner) {
+        this.owner = owner;
+    }
+
 }

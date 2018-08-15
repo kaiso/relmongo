@@ -17,17 +17,21 @@
 
 package io.github.kaiso.relmongo.config;
 
-import io.github.kaiso.relmongo.events.listener.MongoEventListener;
+import io.github.kaiso.relmongo.events.processor.RelMongoProcessor;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
+/**
+ * 
+ * @author Kais OMRI
+ *
+ */
 @Configuration
 public class PersistenceConfiguration {
 
     @Bean
-    public MongoEventListener mongoEventListener() {
-        return new MongoEventListener();
+    public RelMongoProcessor mongoEventListener() {
+        return new RelMongoProcessor();
     }
 
 }

@@ -17,7 +17,7 @@ package io.github.kaiso.relmongo.annotation;
 
 /**
  *  Defines the set of cascadable operations that are propagated to the associated document 
- *
+ *  @author Kais OMRI
  */
 public enum CascadeType {
     /**

@@ -30,7 +30,11 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
-
+/**
+ * 
+ * @author Kais OMRI
+ *
+ */
 public class PersistentPropertyCascadingRemoveCallback implements FieldCallback {
 
     private Document source;
