@@ -21,10 +21,12 @@ import io.github.kaiso.relmongo.annotation.ManyToOne;
 import io.github.kaiso.relmongo.annotation.OneToMany;
 import io.github.kaiso.relmongo.annotation.OneToOne;
 import io.github.kaiso.relmongo.exception.RelMongoConfigurationException;
+import io.github.kaiso.relmongo.model.MappedByMetadata;
 
+import org.springframework.util.ReflectionUtils;
+
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.AbstractMap;
-import java.util.Map.Entry;
 
 /**
  * 
@@ -46,18 +48,62 @@ public class AnnotationsUtils {
         }
     }
 
-    public static Entry<FetchType, String> getMappedByAndFetchType(Field field) {
+    public static FetchType getFetchType(Field field) {
         FetchType fetchType = null;
-        String mappedBy = null;
         if (field.isAnnotationPresent(OneToMany.class)) {
             fetchType = field.getAnnotation(OneToMany.class).fetch();
         } else if (field.isAnnotationPresent(OneToOne.class)) {
             fetchType = field.getAnnotation(OneToOne.class).fetch();
-            mappedBy = field.getAnnotation(OneToOne.class).mappedBy();
         } else if (field.isAnnotationPresent(ManyToOne.class)) {
-            mappedBy = field.getAnnotation(ManyToOne.class).mappedBy();
             fetchType = field.getAnnotation(ManyToOne.class).fetch();
         }
-        return new AbstractMap.SimpleEntry<>(fetchType, mappedBy);
+        return fetchType;
+    }
+
+    public static MappedByMetadata getMappedByInfos(Field field) {
+        MappedByMetadata data = new MappedByMetadata();
+        Class<? extends Annotation> targetAnnotation = null;
+        if (field.isAnnotationPresent(OneToOne.class)) {
+            data.setMappedByValue(field.getAnnotation(OneToOne.class).mappedBy());
+            if (data.getMappedByValue() != null) {
+                targetAnnotation = OneToOne.class;
+            }
+        } else if (field.isAnnotationPresent(ManyToOne.class)) {
+            data.setMappedByValue(field.getAnnotation(ManyToOne.class).mappedBy());
+            if (data.getMappedByValue() != null) {
+                targetAnnotation = OneToMany.class;
+            }
+        }
+
+        if (targetAnnotation == null) {
+            return data;
+        }
+
+        if (field.isAnnotationPresent(JoinProperty.class)) {
+            throw new RelMongoConfigurationException("can not use mappedBy and @JoinProperty on the same field " + field.getName()
+                    + " of class " + field.getDeclaringClass().getName());
+        }
+
+        Field targetProp;
+        Class<?> type = ReflectionsUtil.getGenericType(field);
+        try {
+            targetProp = type.getDeclaredField(data.getMappedByValue());
+            ReflectionUtils.makeAccessible(targetProp);
+            if (!targetProp.isAnnotationPresent(targetAnnotation)) {
+                throw new RelMongoConfigurationException(
+                        "misconfigured bidirectional mapping, the field \"" + field.getName() + "\" declared in " + field.getDeclaringClass().getName()
+                                + " declares a mappedBy property linked to  the field \""
+                                + data.getMappedByValue() + "\"  of class " + type.getName() +
+                                " so you must use compatible RelMongo annotations on the these fields");
+            }
+
+            data.setMappedByJoinProperty(getJoinProperty(targetProp));
+
+        } catch (NoSuchFieldException | SecurityException ex) {
+            throw new RelMongoConfigurationException("unable to find field with name " + data.getMappedByValue() +
+                    " in the type " + type.getCanonicalName(), ex);
+        }
+
+        return data;
     }
 }

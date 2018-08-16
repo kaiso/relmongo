@@ -20,6 +20,7 @@ import io.github.kaiso.relmongo.annotation.FetchType;
 import io.github.kaiso.relmongo.annotation.OneToMany;
 import io.github.kaiso.relmongo.events.processor.MappedByProcessor;
 import io.github.kaiso.relmongo.exception.RelMongoConfigurationException;
+import io.github.kaiso.relmongo.model.MappedByMetadata;
 import io.github.kaiso.relmongo.mongo.DatabaseOperations;
 import io.github.kaiso.relmongo.mongo.DocumentUtils;
 import io.github.kaiso.relmongo.mongo.PersistentRelationResolver;
@@ -35,7 +36,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 /**
@@ -60,31 +60,18 @@ public class PersistentPropertyPostLoadingCallback implements FieldCallback {
         ReflectionUtils.makeAccessible(field);
         Class<?> type = ReflectionsUtil.getGenericType(field);
 
-        String mappedByProperty = null;
-        Entry<FetchType, String> result = AnnotationsUtils.getMappedByAndFetchType(field);
-        String mappedBy = result.getValue();
-        FetchType fetchType = result.getKey();
+        FetchType fetchType = AnnotationsUtils.getFetchType(field);
 
         if (DocumentUtils.isLoaded(document.get(field.getName()))) {
             MappedByProcessor.processChild(source, source, field, type);
             return;
         }
 
-        if (mappedBy != null && !"".equals(mappedBy)) {
-            Field targetProp;
-            try {
-                targetProp = type.getDeclaredField(mappedBy);
-                ReflectionUtils.makeAccessible(targetProp);
-            } catch (NoSuchFieldException | SecurityException ex) {
-                throw new RelMongoConfigurationException("unable to find field with name " + mappedBy +
-                        " in the type " + type.getCanonicalName(), ex);
-            }
-            mappedByProperty = AnnotationsUtils.getJoinProperty(targetProp);
-        }
+        MappedByMetadata mappedByInfos = AnnotationsUtils.getMappedByInfos(field);
 
         if (FetchType.LAZY.equals(fetchType)) {
             List<Object> identifierList = new ArrayList<>();
-            if (mappedByProperty == null) {
+            if (mappedByInfos.getMappedByValue() == null) {
                 String joinPropertyName = AnnotationsUtils.getJoinProperty(field);
                 if (field.isAnnotationPresent(OneToMany.class) && !Collection.class.isAssignableFrom(field.getType())) {
                     throw new RelMongoConfigurationException("in @OneToMany, the field must be of type collection ");
@@ -104,11 +91,11 @@ public class PersistentPropertyPostLoadingCallback implements FieldCallback {
                 identifierList.add(document.getObjectId("_id"));
             }
             field.set(source, PersistentRelationResolver.lazyLoader(field.getType(), mongoOperations,
-                    identifierList, mappedByProperty, type,
+                    identifierList, mappedByInfos.getMappedByJoinProperty(), type,
                     field.get(source), source, field.getName()));
-        } else if (mappedByProperty != null) {
+        } else if (mappedByInfos.getMappedByValue() != null) {
             field.set(source, DatabaseOperations.findByPropertyValue(mongoOperations, type,
-                    mappedByProperty + "._id", document.getObjectId("_id")));
+                    mappedByInfos.getMappedByJoinProperty() + "._id", document.getObjectId("_id")));
         }
 
     }

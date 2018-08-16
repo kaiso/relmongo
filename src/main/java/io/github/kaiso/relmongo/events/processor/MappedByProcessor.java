@@ -15,18 +15,16 @@
 */
 package io.github.kaiso.relmongo.events.processor;
 
-import io.github.kaiso.relmongo.annotation.FetchType;
 import io.github.kaiso.relmongo.exception.RelMongoProcessingException;
+import io.github.kaiso.relmongo.model.MappedByMetadata;
 import io.github.kaiso.relmongo.util.AnnotationsUtils;
 import io.github.kaiso.relmongo.util.ReflectionsUtil;
 
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
-import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
-import java.util.Map.Entry;
 
 /**
  * 
@@ -47,10 +45,10 @@ public final class MappedByProcessor {
                 if (!ReflectionsUtil.getGenericType(field).equals(parent.getClass())) {
                     return;
                 }
-                
-                Entry<FetchType, String> result = AnnotationsUtils.getMappedByAndFetchType(field);
-                
-                if (!StringUtils.isEmpty(result.getValue()) && result.getValue().equals(targetField.getName())
+
+                MappedByMetadata mappedByInfos = AnnotationsUtils.getMappedByInfos(field);
+
+                if (mappedByInfos.getMappedByValue() != null && mappedByInfos.getMappedByValue().equals(targetField.getName())
                         && targetField.get(parent) != null) {
                     if (Collection.class.isAssignableFrom(targetField.getType())) {
                         ((Collection<?>) targetField.get(parent)).forEach(element -> {
