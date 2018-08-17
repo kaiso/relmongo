@@ -22,7 +22,11 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
+/**
+ * 
+ * @author Kais OMRI
+ *
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = { ElementType.TYPE })
 @Import(value = PersistenceConfiguration.class)

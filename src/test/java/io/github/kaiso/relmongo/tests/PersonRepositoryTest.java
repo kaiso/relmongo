@@ -132,6 +132,9 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         Optional<Person> retreivedPerson = repository.findById(person.getId().toString());
         assertNotNull(retreivedPerson.get().getPassport());
         assertEquals(retreivedPerson.get().getPassport().getNumber(), "12345");
+        //mappedBy
+        assertEquals(retreivedPerson.get().getPassport().getOwner().getId(), retreivedPerson.get().getId());
+        
     }
 
     @Test
@@ -141,15 +144,24 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         String manufacturer = "BMW";
         car.setManufacturer(manufacturer);
         carRepository.save(car);
+        
+        Car car1 = new Car();
+        car1.setColor(Color.RED);
+        String manufacturer1 = "JAGUAR";
+        car1.setManufacturer(manufacturer1);
+        carRepository.save(car1);
+
         Person person = new Person();
         person.setName("Dave");
         person.setEmail("dave@mail.com");
-        person.setCars(Arrays.asList(new Car[] { car }));
+        person.setCars(Arrays.asList(new Car[] { car, car1 }));
         repository.save(person);
         Optional<Person> retreivedPerson = repository.findById(person.getId().toString());
         assertFalse(retreivedPerson.get().getCars().isEmpty());
         assertTrue(retreivedPerson.get().getCars().get(0).getColor().equals(Color.BLUE));
         assertTrue(retreivedPerson.get().getCars().get(0).getManufacturer().equals(manufacturer));
+        //mappedBy
+        assertEquals(retreivedPerson.get().getCars().get(0).getOwner().getId(), retreivedPerson.get().getId());
     }
 
     @Test
@@ -157,15 +169,17 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         House house = new House();
         house.setAddress("Paris");
         houseRepository.save(house);
-        Person employee = new Person();
-        employee.setName("Dave");
-        employee.setEmail("dave@mail.com");
-        employee.setHouses(Arrays.asList(new House[] { house }));
-        repository.save(employee);
-        Optional<Person> retreivedEmployee = repository.findById(employee.getId().toString());
-        assertFalse(retreivedEmployee.get().getHouses().isEmpty());
-        assertTrue(retreivedEmployee.get().getHouses().get(0).getAddress().equals("Paris"));
-        assertTrue(retreivedEmployee.get().getHouses() instanceof LazyLoadingProxy);
+        Person person = new Person();
+        person.setName("Dave");
+        person.setEmail("dave@mail.com");
+        person.setHouses(Arrays.asList(new House[] { house }));
+        repository.save(person);
+        Optional<Person> retreivedPerson = repository.findById(person.getId().toString());
+        assertFalse(retreivedPerson.get().getHouses().isEmpty());
+        assertTrue(retreivedPerson.get().getHouses().get(0).getAddress().equals("Paris"));
+        assertTrue(retreivedPerson.get().getHouses() instanceof LazyLoadingProxy);
+        //mappedBy
+        assertEquals(retreivedPerson.get().getHouses().get(0).getOwner().getId(), retreivedPerson.get().getId());
     }
 
     @Test
@@ -285,7 +299,9 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         person.setEmail("dave@mail.com");
         person.setCars(Arrays.asList(new Car[] { car, car1 }));
         repository.save(person);
+        
         Optional<Person> retreivedPerson = repository.findById(person.getId().toString());
+        
         assertTrue(retreivedPerson.get().getCars().size() == 2);
         assertTrue(retreivedPerson.get().getCars().get(0).getColor().equals(Color.BLUE));
         assertTrue(retreivedPerson.get().getCars().get(0).getManufacturer().equals(manufacturer));

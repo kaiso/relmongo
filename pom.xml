@@ -5,7 +5,7 @@
 
 	<groupId>io.github.kaiso.relmongo</groupId>
 	<artifactId>relmongo</artifactId>
-	<version>2.1.1</version>
+	<version>2.2.0-RC1</version>
 	<packaging>jar</packaging>
 
 	<name>relmongo</name>
@@ -16,6 +16,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.plugin.source.version>3.0.1</maven.plugin.source.version>
+		<maven.plugin.javadoc.version>3.0.1</maven.plugin.javadoc.version>
 		<spring.data.version>2.0.8.RELEASE</spring.data.version>
 		<spring.version>5.0.6.RELEASE</spring.version>
 		<mongo.driver.version>3.7.0</mongo.driver.version>
@@ -158,6 +160,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-source-plugin</artifactId>
+						<version>${maven.plugin.source.version}</version>
 						<executions>
 							<execution>
 								<id>attach-sources</id>
@@ -170,6 +173,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>${maven.plugin.javadoc.version}</version>
 						<executions>
 							<execution>
 								<id>attach-javadocs</id>

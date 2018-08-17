@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
 /**
  * Describes Unidirectional OneToMany relation <br>
  * The referenced property for this association in the target object is allways the "_id"
- *
+ * @author Kais OMRI
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

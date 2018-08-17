@@ -14,13 +14,13 @@
 *  limitations under the License.
 */
 
-package io.github.kaiso.relmongo.events.listener;
+package io.github.kaiso.relmongo.events.processor;
 
 import io.github.kaiso.relmongo.events.callback.PersistentPropertyCascadingRemoveCallback;
 import io.github.kaiso.relmongo.events.callback.PersistentPropertyCascadingSaveCallback;
 import io.github.kaiso.relmongo.events.callback.PersistentPropertyConvertingCallback;
-import io.github.kaiso.relmongo.events.callback.PersistentPropertyLazyLoadingCallback;
 import io.github.kaiso.relmongo.events.callback.PersistentPropertyLoadingCallback;
+import io.github.kaiso.relmongo.events.callback.PersistentPropertyPostLoadingCallback;
 import io.github.kaiso.relmongo.events.callback.PersistentPropertySavingCallback;
 import io.github.kaiso.relmongo.model.LoadableObjectsMetadata;
 import io.github.kaiso.relmongo.mongo.PersistentRelationResolver;
@@ -38,7 +38,12 @@ import org.springframework.util.ReflectionUtils;
 
 import java.util.List;
 
-public class MongoEventListener extends AbstractMongoEventListener<Object> {
+/**
+ * 
+ * @author Kais OMRI
+ *
+ */
+public class RelMongoProcessor extends AbstractMongoEventListener<Object> {
 
     @Autowired
     private MongoOperations mongoOperations;
@@ -66,12 +71,11 @@ public class MongoEventListener extends AbstractMongoEventListener<Object> {
         super.onBeforeConvert(event);
         PersistentPropertyConvertingCallback callback = new PersistentPropertyConvertingCallback(event.getSource());
         ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
-
     }
 
     @Override
     public void onAfterConvert(AfterConvertEvent<Object> event) {
-        PersistentPropertyLazyLoadingCallback callback = new PersistentPropertyLazyLoadingCallback(event.getSource(), event.getDocument(), mongoOperations);
+        PersistentPropertyPostLoadingCallback callback = new PersistentPropertyPostLoadingCallback(event.getSource(), event.getDocument(), mongoOperations);
         ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
         super.onAfterConvert(event);
     }

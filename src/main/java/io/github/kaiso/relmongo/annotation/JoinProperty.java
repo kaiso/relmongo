@@ -21,7 +21,11 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
+/**
+ *  Used to specify the join property used in the {@link OneToOne} or {@link OneToMany} associations
+ * @author Kais OMRI
+ *
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface JoinProperty {

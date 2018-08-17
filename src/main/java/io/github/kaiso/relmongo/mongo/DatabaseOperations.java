@@ -32,6 +32,11 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * 
+ * @author Kais OMRI
+ *
+ */
 public final class DatabaseOperations {
 
     private DatabaseOperations() {

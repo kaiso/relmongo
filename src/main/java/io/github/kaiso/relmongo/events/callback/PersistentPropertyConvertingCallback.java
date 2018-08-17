@@ -16,74 +16,83 @@
 
 package io.github.kaiso.relmongo.events.callback;
 
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collection;
+import io.github.kaiso.relmongo.annotation.CascadeType;
+import io.github.kaiso.relmongo.annotation.OneToMany;
+import io.github.kaiso.relmongo.annotation.OneToOne;
+import io.github.kaiso.relmongo.events.processor.MappedByProcessor;
+import io.github.kaiso.relmongo.exception.RelMongoConfigurationException;
+import io.github.kaiso.relmongo.exception.RelMongoProcessingException;
+import io.github.kaiso.relmongo.util.ObjectIdReaderCallback;
+import io.github.kaiso.relmongo.util.ReflectionsUtil;
 
 import org.bson.types.ObjectId;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
-import io.github.kaiso.relmongo.annotation.CascadeType;
-import io.github.kaiso.relmongo.annotation.OneToMany;
-import io.github.kaiso.relmongo.annotation.OneToOne;
-import io.github.kaiso.relmongo.exception.RelMongoConfigurationException;
-import io.github.kaiso.relmongo.exception.RelMongoProcessingException;
-import io.github.kaiso.relmongo.util.ObjectIdReaderCallback;
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Collection;
 
+/**
+ * 
+ * @author Kais OMRI
+ *
+ */
 public class PersistentPropertyConvertingCallback implements FieldCallback {
 
-	private Object source;
+    private Object source;
 
-	public PersistentPropertyConvertingCallback(Object source) {
-		super();
-		this.source = source;
-	}
+    public PersistentPropertyConvertingCallback(Object source) {
+        super();
+        this.source = source;
+    }
 
-	public void doWith(Field field) throws IllegalAccessException {
-		ReflectionUtils.makeAccessible(field);
+    public void doWith(Field field) throws IllegalAccessException {
+        ReflectionUtils.makeAccessible(field);
+        
+        MappedByProcessor.processChild(source, null, field, ReflectionsUtil.getGenericType(field));
 
-		if (field.isAnnotationPresent(OneToMany.class)) {
-			fillIdentifiers(field, field.getAnnotation(OneToMany.class).cascade());
-		} else if (field.isAnnotationPresent(OneToOne.class)) {
-			fillIdentifiers(field, field.getAnnotation(OneToOne.class).cascade());
-		}
+        if (field.isAnnotationPresent(OneToMany.class)) {
+            fillIdentifiers(field, field.getAnnotation(OneToMany.class).cascade());
+        } else if (field.isAnnotationPresent(OneToOne.class)) {
+            fillIdentifiers(field, field.getAnnotation(OneToOne.class).cascade());
+        }
 
-	}
+    }
 
-	private void fillIdentifiers(Field field, CascadeType cascadeType) throws IllegalAccessException {
-		Object reference = field.get(source);
-		if (reference == null) {
-			return;
-		}
-		if (Arrays.asList(CascadeType.PERSIST, CascadeType.ALL).contains(cascadeType)) {
-			if (Collection.class.isAssignableFrom(reference.getClass())) {
-				((Collection<?>) reference).stream().forEach(this::checkIdentifier);
-			} else {
-				checkIdentifier(reference);
-			}
-		}
+    private void fillIdentifiers(Field field, CascadeType cascadeType) throws IllegalAccessException {
+        Object reference = field.get(source);
+        if (reference == null) {
+            return;
+        }
+        if (Arrays.asList(CascadeType.PERSIST, CascadeType.ALL).contains(cascadeType)) {
+            if (Collection.class.isAssignableFrom(reference.getClass())) {
+                ((Collection<?>) reference).stream().forEach(this::checkIdentifier);
+            } else {
+                checkIdentifier(reference);
+            }
+        }
 
-	}
+    }
 
-	private void checkIdentifier(Object obj) {
+    private void checkIdentifier(Object obj) {
 
-		try {
-			ObjectIdReaderCallback objectIdReaderCallback = new ObjectIdReaderCallback(obj);
-			ReflectionUtils.doWithFields(obj.getClass(), objectIdReaderCallback);
-			if (objectIdReaderCallback.getIdField() == null) {
-				throw new RelMongoConfigurationException("the Id field of class [" + obj.getClass()
-						+ "] must be annotated by @Id (org.springframework.data.annotation.Id)");
-			}
-			Object id = objectIdReaderCallback.getIdField().get(obj);
-			if (id == null) {
-				objectIdReaderCallback.getIdField().set(obj, ObjectId.get());
-			}
+        try {
+            ObjectIdReaderCallback objectIdReaderCallback = new ObjectIdReaderCallback(obj);
+            ReflectionUtils.doWithFields(obj.getClass(), objectIdReaderCallback);
+            if (objectIdReaderCallback.getIdField() == null) {
+                throw new RelMongoConfigurationException("the Id field of class [" + obj.getClass()
+                        + "] must be annotated by @Id (org.springframework.data.annotation.Id)");
+            }
+            Object id = objectIdReaderCallback.getIdField().get(obj);
+            if (id == null) {
+                objectIdReaderCallback.getIdField().set(obj, ObjectId.get());
+            }
 
-		} catch (IllegalArgumentException | IllegalAccessException e) {
-			throw new RelMongoProcessingException(e);
-		}
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            throw new RelMongoProcessingException(e);
+        }
 
-	}
+    }
 
 }

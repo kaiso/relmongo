@@ -11,11 +11,12 @@ RelMongo (Relational Mongo) allows to use relations between mongodb collections 
 RelMongo is built in top of the [Spring Data MongoDB](https://projects.spring.io/spring-data-mongodb/) framework.
 # Features
  RelMongo provides :
- - @EnableRelationalMongo to enable RelMongo annotations processing
+ - @EnableRelationalMongo to enable RelMongo engine
  - @OneToMany annotation to address 1..N relations
  - @OneToOne annotation to address 1..1 relations
  - Two fetching methods ( LAZY and EAGER)
  - Cascading operations
+ - Bidirectional mapping using the `mappedBy` attribute
  
 To get more details please see the [release notes](https://github.com/kaiso/relmongo/releases).
 # Wiki
@@ -102,6 +103,7 @@ database layout when executing this test :
 - [x] Based on [Spring framework and derivatives](https://spring.io/)
 - [x] Simple to use
 - [x] Ready to use on existing database with few changes and in many cases with no changes
+- [x] Bidirectional mapping
 # Notes
 - RelMongo may be an alternative for DBREF which allow to use $lookup querries in mongodb while it is not possible with DBREF.
 - [MongoDB](https://www.mongodb.com/) is a document oriented database and is not suitable for relations, if you are using relations massively you may have
@@ -111,7 +113,7 @@ a design or technical choice problems.
 
 # LICENSE
 
-   Copyright 2018 Kais OMRI and authors.
+   © Copyright 2018 Kais OMRI.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

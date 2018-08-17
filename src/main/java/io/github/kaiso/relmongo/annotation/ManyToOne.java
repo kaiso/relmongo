@@ -22,14 +22,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Describes Unidirectional OneToOne relation
- * The referenced property for this association in the target object is allways the "_id"
+ * Describes bidirectional side of he
+ * {@link io.github.kaiso.relmongo.annotation.OneToMany} relation <br>
+ * 
  * @author Kais OMRI
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface OneToOne {
-    FetchType fetch() default FetchType.LAZY;
-    CascadeType cascade() default CascadeType.NONE;
-    String mappedBy() default "";
+public @interface ManyToOne {
+    String mappedBy();
+    FetchType  fetch() default FetchType.LAZY;
 }

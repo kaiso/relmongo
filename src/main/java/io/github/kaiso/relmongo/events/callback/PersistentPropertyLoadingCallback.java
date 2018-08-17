@@ -19,22 +19,27 @@ package io.github.kaiso.relmongo.events.callback;
 import com.mongodb.BasicDBList;
 
 import io.github.kaiso.relmongo.annotation.FetchType;
-import io.github.kaiso.relmongo.annotation.JoinProperty;
 import io.github.kaiso.relmongo.annotation.OneToMany;
 import io.github.kaiso.relmongo.annotation.OneToOne;
 import io.github.kaiso.relmongo.exception.RelMongoConfigurationException;
 import io.github.kaiso.relmongo.model.LoadableObjectsMetadata;
 import io.github.kaiso.relmongo.mongo.DocumentUtils;
+import io.github.kaiso.relmongo.util.AnnotationsUtils;
 import io.github.kaiso.relmongo.util.ReflectionsUtil;
 
 import org.bson.Document;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
+import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-
+/**
+ * 
+ * @author Kais OMRI
+ *
+ */
 public class PersistentPropertyLoadingCallback implements FieldCallback {
 
     private List<LoadableObjectsMetadata> loadableObjects = new ArrayList<>();
@@ -51,7 +56,8 @@ public class PersistentPropertyLoadingCallback implements FieldCallback {
         if (field.isAnnotationPresent(OneToMany.class)) {
             fetchType = field.getAnnotation(OneToMany.class).fetch();
             loadAssociation(field, fetchType, OneToMany.class);
-        } else if (field.isAnnotationPresent(OneToOne.class)) {
+        } else if (field.isAnnotationPresent(OneToOne.class)
+                && StringUtils.isEmpty(field.getAnnotation(OneToOne.class).mappedBy())) {
             fetchType = field.getAnnotation(OneToOne.class).fetch();
             loadAssociation(field, fetchType, OneToOne.class);
         }
@@ -59,12 +65,7 @@ public class PersistentPropertyLoadingCallback implements FieldCallback {
     }
 
     private void loadAssociation(Field field, FetchType fetchType, Class<?> annotation) {
-        String name = "";
-        try {
-            name = field.getAnnotation(JoinProperty.class).name();
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Missing or misconfigured @JoinProperty annotation", e);
-        }
+        String name = AnnotationsUtils.getJoinProperty(field);
         Object ids = null;
         try {
             ids = ((org.bson.Document) source).get(name);
