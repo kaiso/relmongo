@@ -5,6 +5,7 @@
 [![][license img]][license]
 [![][maven img]][maven]
 [![][build img]][build]
+[![Join the chat at https://gitter.im/relmongo/Lobby](https://badges.gitter.im/relmongo/Lobby.svg)](https://gitter.im/relmongo/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 <br>
 
 RelMongo (Relational Mongo) allows to use relations between mongodb collections in a JPA way <br>
