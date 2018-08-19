@@ -73,6 +73,8 @@ public class MappedByTest extends AbstractBaseTest {
         assertFalse(retreivedPerson.get().getCars().isEmpty());
 
         Optional<Car> result = carRepository.findById(savedCar.getId().toString());
+        carRepository.save(result.get());
+        result = carRepository.findById(savedCar.getId().toString());
         assertTrue(result.isPresent());
         assertEquals(result.get().getOwner().getId(), retreivedPerson.get().getId());
     }
@@ -108,6 +110,9 @@ public class MappedByTest extends AbstractBaseTest {
         person.setPassport(passport);
         person = repository.save(person);
         Optional<Passport> retreivedPassport = passportRepository.findById(passport.getId().toString());
+        // to test save retrieved one
+        passportRepository.save(retreivedPassport.get());
+        retreivedPassport = passportRepository.findById(passport.getId().toString());
         assertEquals(person.getId(), retreivedPassport.get().getOwner().getId());
     }
 

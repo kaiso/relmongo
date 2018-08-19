@@ -8,7 +8,7 @@
 [![Join the chat at https://gitter.im/relmongo/Lobby](https://badges.gitter.im/relmongo/general.svg)](https://gitter.im/relmongo/general?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 <br>
 
-RelMongo (Relational Mongo) allows to use relations between mongodb collections in a JPA way <br>
+RelMongo (Relational Mongo) allows to use relations between mongodb collections <br>
 RelMongo is built in top of the [Spring Data MongoDB](https://projects.spring.io/spring-data-mongodb/) framework.
 # Features
  RelMongo provides :
@@ -48,20 +48,20 @@ given two concepts with "one to *" relation<br><br>
      |__________________|                       |__________________|
 
 on your Person mongo entity simply add the following annotations from RelMongo :
-```
+```java
     @OneToMany(fetch=FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinProperty(name="cars")
     private List<Car> cars;
 ```
 and on your Spring App config class simply add @EnableRelationalMongo annotation:
-``` 
+```java
     ... Other Annotations
     @EnableRelationalMongo
     public Class AppConfig
     
 ```
 test your code :
-``` 
+```java
         Car car = new Car();
         car.setColor(Color.BLUE);
         String manufacturer = "BMW";

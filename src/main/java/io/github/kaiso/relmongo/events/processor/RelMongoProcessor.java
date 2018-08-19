@@ -68,9 +68,9 @@ public class RelMongoProcessor extends AbstractMongoEventListener<Object> {
 
     @Override
     public void onBeforeConvert(BeforeConvertEvent<Object> event) {
-        super.onBeforeConvert(event);
         PersistentPropertyConvertingCallback callback = new PersistentPropertyConvertingCallback(event.getSource());
         ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
+        super.onBeforeConvert(event);
     }
 
     @Override
