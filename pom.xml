@@ -11,7 +11,7 @@
 	<name>relmongo</name>
 	<url>https://kaiso.github.io/relmongo/</url>
 	<description>Make use of relations in MongoDB</description>
-
+    
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
@@ -52,7 +52,7 @@
 
 	<scm>
 		<connection>scm:git:git://github.com/kaiso/relmongo.git</connection>
-		<developerConnection>scm:git:ssh://github.com:kaiso/relmongo.git</developerConnection>
+		<developerConnection>scm:git:git@github.com:kaiso/relmongo.git</developerConnection>
 		<url>http://github.com/kaiso/relmongo/tree/master</url>
 	</scm>
 

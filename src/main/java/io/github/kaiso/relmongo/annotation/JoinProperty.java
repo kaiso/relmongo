@@ -29,5 +29,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface JoinProperty {
+	/**
+	 * the name of the attribute that holds the reference to the associated object 
+	 */
     String  name() default "";
 }

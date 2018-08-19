@@ -5,10 +5,10 @@
 [![][license img]][license]
 [![][maven img]][maven]
 [![][build img]][build]
-[![Join the chat at https://gitter.im/relmongo/Lobby](https://badges.gitter.im/relmongo/general.svg)](https://gitter.im/relmongo/general?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at https://gitter.im/relmongo/general](https://badges.gitter.im/relmongo/general.svg)](https://gitter.im/relmongo/general?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 <br>
 
-RelMongo (Relational Mongo) allows to use relations between mongodb collections <br>
+RelMongo (Relational Mongo) allows to use relations between MongoDB collections <br>
 RelMongo is built in top of the [Spring Data MongoDB](https://projects.spring.io/spring-data-mongodb/) framework.
 # Features
  RelMongo provides :

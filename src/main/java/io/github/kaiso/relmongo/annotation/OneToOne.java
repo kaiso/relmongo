@@ -22,14 +22,31 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Describes Unidirectional OneToOne relation
- * The referenced property for this association in the target object is allways the "_id"
+ * Describes Unidirectional OneToOne relation The referenced property for this
+ * association in the target object is allways the "_id"
+ * 
  * @author Kais OMRI
+ * 
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface OneToOne {
-    FetchType fetch() default FetchType.LAZY;
-    CascadeType cascade() default CascadeType.NONE;
-    String mappedBy() default "";
+	/**
+	 * (Optional) Whether the association should be lazily loaded or must be eagerly
+	 * fetched.
+	 */
+	FetchType fetch() default FetchType.LAZY;
+
+	/**
+	 * (Optional) The operations that must be cascaded to the target of the
+	 * association.
+	 */
+	CascadeType cascade() default CascadeType.NONE;
+
+	/**
+	 * The field that owns the relationship.
+	 * 
+	 * @since 2.0.0
+	 */
+	String mappedBy() default "";
 }

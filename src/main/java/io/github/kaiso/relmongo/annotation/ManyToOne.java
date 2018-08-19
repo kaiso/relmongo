@@ -25,11 +25,23 @@ import java.lang.annotation.Target;
  * Describes bidirectional side of he
  * {@link io.github.kaiso.relmongo.annotation.OneToMany} relation <br>
  * 
+ * @since 2.0.0
  * @author Kais OMRI
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface ManyToOne {
-    String mappedBy();
-    FetchType  fetch() default FetchType.LAZY;
+	/**
+	 * (Optional) Whether the association should be lazily loaded or must be eagerly
+	 * fetched.
+	 */
+	FetchType fetch() default FetchType.LAZY;
+
+	/**
+	 * The field that owns the relationship.
+	 * 
+	 * @since 2.0.0
+	 */
+	String mappedBy() default "";
+
 }

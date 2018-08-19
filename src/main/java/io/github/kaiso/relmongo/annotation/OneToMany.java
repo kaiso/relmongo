@@ -30,6 +30,15 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface OneToMany {
-    FetchType  fetch() default FetchType.LAZY;
-    CascadeType cascade() default CascadeType.NONE;
+	/**
+	 * (Optional) Whether the association should be lazily loaded or must be eagerly
+	 * fetched.
+	 */
+	FetchType fetch() default FetchType.LAZY;
+
+	/**
+	 * (Optional) The operations that must be cascaded to the target of the
+	 * association.
+	 */
+	CascadeType cascade() default CascadeType.NONE;
 }
