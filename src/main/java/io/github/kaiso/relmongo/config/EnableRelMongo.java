@@ -28,7 +28,8 @@ import java.lang.annotation.Target;
 /**
  * Enables the RelMongo framework processing.<br>
  * RelMongo allows to implement relations and associations between MongoDB collections <br>
- * @see {@link OneToMany} {@link OneToOne}
+ * @see OneToMany
+ * @see OneToOne
  * @author Kais OMRI
  *
  */
