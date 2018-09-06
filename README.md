@@ -53,10 +53,10 @@ on your Person mongo entity simply add the following annotations from RelMongo :
     @JoinProperty(name="cars")
     private List<Car> cars;
 ```
-and on your Spring App config class simply add @EnableRelationalMongo annotation:
+and on your Spring App config class simply add @EnableRelMongo annotation:
 ```java
     ... Other Annotations
-    @EnableRelationalMongo
+    @EnableRelMongo
     public Class AppConfig
     
 ```
