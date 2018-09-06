@@ -8,7 +8,7 @@
 [![Join the chat at https://gitter.im/relmongo/general](https://badges.gitter.im/relmongo/general.svg)](https://gitter.im/relmongo/general?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 <br>
 
-RelMongo (Relational Mongo) allows to use relations between MongoDB collections <br>
+RelMongo allows to implement two-way relations and associations between MongoDB collections in a simple way <br>
 RelMongo is built in top of the [Spring Data MongoDB](https://projects.spring.io/spring-data-mongodb/) framework.
 # Features
  RelMongo provides :

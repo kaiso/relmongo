@@ -95,7 +95,7 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         assertNull(document.get("cars"));
         Document obj = new Document();
         obj.put("_id", car1.getId());
-        obj.put(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME, "cars");
+        obj.put(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME, "car");
         assertTrue(((Collection<?>) document.get("carsrefs")).size() == 2);
         assertEquals(((Collection<?>) document.get("carsrefs")).iterator().next(), obj);
     }
@@ -143,13 +143,13 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         car.setColor(Color.BLUE);
         String manufacturer = "BMW";
         car.setManufacturer(manufacturer);
-        carRepository.save(car);
+       // carRepository.save(car);
         
         Car car1 = new Car();
         car1.setColor(Color.RED);
         String manufacturer1 = "JAGUAR";
         car1.setManufacturer(manufacturer1);
-        carRepository.save(car1);
+       // carRepository.save(car1);
 
         Person person = new Person();
         person.setName("Dave");
@@ -157,6 +157,7 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         person.setCars(Arrays.asList(new Car[] { car, car1 }));
         repository.save(person);
         Optional<Person> retreivedPerson = repository.findById(person.getId().toString());
+        System.out.println(retreivedPerson.get());
         assertFalse(retreivedPerson.get().getCars().isEmpty());
         assertTrue(retreivedPerson.get().getCars().get(0).getColor().equals(Color.BLUE));
         assertTrue(retreivedPerson.get().getCars().get(0).getManufacturer().equals(manufacturer));
@@ -175,6 +176,7 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         person.setHouses(Arrays.asList(new House[] { house }));
         repository.save(person);
         Optional<Person> retreivedPerson = repository.findById(person.getId().toString());
+        System.out.println(retreivedPerson.get());
         assertFalse(retreivedPerson.get().getHouses().isEmpty());
         assertTrue(retreivedPerson.get().getHouses().get(0).getAddress().equals("Paris"));
         assertTrue(retreivedPerson.get().getHouses() instanceof LazyLoadingProxy);
@@ -332,6 +334,7 @@ public class PersonRepositoryTest extends AbstractBaseTest {
 
         List<Person> findAll = repository.findAll();
         assertTrue(findAll.get(0).getCars().size() == 2);
+        assertEquals("JAGUAR", findAll.get(0).getCars().get(1).getManufacturer());
     }
 
     @Test
@@ -340,7 +343,7 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         house.setAddress("Paris");
 
         House house1 = new House();
-        house.setAddress("Tunis");
+        house.setAddress("Bir El Hafey");
         
         
 

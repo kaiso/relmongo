@@ -114,11 +114,11 @@ public class CascadingTest extends AbstractBaseTest {
         assertNull(document.get("cars"));
         Document obj = new Document();
         obj.put("_id", car1.getId());
-        obj.put(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME, "cars");
+        obj.put(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME, "car");
         assertTrue(((Collection<?>) document.get("carsrefs")).size() == 2);
         assertTrue(((Collection<?>) document.get("carsrefs")).contains(obj));
 
-        FindIterable<Document> cars = mongoOperations.getCollection("cars").find();
+        FindIterable<Document> cars = mongoOperations.getCollection("car").find();
         AtomicInteger count = new AtomicInteger(0);
         AtomicReference<List<Document>> carsDocuments = new AtomicReference<>(new ArrayList<>());
         Consumer<Document> filter = new Consumer<Document>() {
@@ -161,7 +161,7 @@ public class CascadingTest extends AbstractBaseTest {
 
         repository.delete(person2);
 
-        FindIterable<Document> cars = mongoOperations.getCollection("cars").find();
+        FindIterable<Document> cars = mongoOperations.getCollection("car").find();
         AtomicReference<List<Document>> carsDocuments = new AtomicReference<>(new ArrayList<>());
         Consumer<Document> filter = new Consumer<Document>() {
 

@@ -23,10 +23,10 @@ public class PersonRepositoryCustomImpl implements PersonRepositoryCustom {
 
 	@Override
 	public List<Person> findAll() {
-		LookupOperation lookup = LookupOperation.newLookup().from("cars").localField("carsrefs._id").foreignField("_id")
+		LookupOperation lookup = LookupOperation.newLookup().from("car").localField("carsrefs._id").foreignField("_id")
 				.as("cars");
 		
-		LookupOperation lookupHouses = LookupOperation.newLookup().from("houses").localField("housesrefs._id").foreignField("_id")
+		LookupOperation lookupHouses = LookupOperation.newLookup().from("houses").localField("houses._id").foreignField("_id")
                 .as("houses");
 
 		AggregationResults<Person> result = mongoTemplate.aggregate(
