@@ -12,7 +12,7 @@ RelMongo allows to implement two-way relations and associations between MongoDB 
 RelMongo is built in top of the [Spring Data MongoDB](https://projects.spring.io/spring-data-mongodb/) framework.
 # Features
  RelMongo provides :
- - @EnableRelationalMongo to enable RelMongo engine
+ - @EnableRelMongo to enable RelMongo engine
  - @OneToMany annotation to address 1..N relations
  - @OneToOne annotation to address 1..1 relations
  - Two fetching methods ( LAZY and EAGER)
