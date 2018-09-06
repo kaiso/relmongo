@@ -22,7 +22,7 @@ public class Person {
     private List<Car> cars;
     
     @OneToMany(fetch=FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinProperty(name="housesrefs")
+    @JoinProperty(name="houses")
     private List<House> houses;
     
     @OneToOne(fetch=FetchType.EAGER)
@@ -77,7 +77,14 @@ public class Person {
     }
     
     
-
+    @Override
+    public String toString() {
+        return "Person{" +
+                "id='" + id + '\'' +
+                "cars:" + cars +
+                ", name='" + name + '\'' +
+                '}';
+    }
     
     
 }

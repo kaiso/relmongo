@@ -63,7 +63,9 @@ public final class PersistentRelationResolver {
     public static Object lazyLoader(Class<?> type, MongoOperations mongoOperations, List<Object> ids,
             String property, Class<?> targetClass, Object original, Object parent, String fieldName) {
         Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(targetClass);
+        if (!Collection.class.isAssignableFrom(type)) {
+            enhancer.setSuperclass(targetClass);
+        }
         RelMongoLazyLoader lazyLoader = new RelMongoLazyLoader(ids, property, mongoOperations,
                 targetClass, type, fieldName, original, parent);
         enhancer.setCallback(lazyLoader);

@@ -10,6 +10,7 @@ import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
 import de.flapdoodle.embed.mongo.config.Net;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.process.runtime.Network;
+import io.github.kaiso.relmongo.config.EnableRelMongo;
 import io.github.kaiso.relmongo.config.EnableRelationalMongo;
 
 import org.junit.jupiter.api.AfterAll;
@@ -20,7 +21,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@EnableRelationalMongo
+@EnableRelMongo
 @EnableMongoRepositories(basePackages = "io.github.kaiso.relmongo.data")
 @ExtendWith(SpringExtension.class)
 public abstract class AbstractBaseTest {

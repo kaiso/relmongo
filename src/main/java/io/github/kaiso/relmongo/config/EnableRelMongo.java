@@ -16,6 +16,9 @@
 
 package io.github.kaiso.relmongo.config;
 
+import io.github.kaiso.relmongo.annotation.OneToMany;
+import io.github.kaiso.relmongo.annotation.OneToOne;
+
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.ElementType;
@@ -23,14 +26,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 /**
- * @deprecated use {@link EnableRelMongo} instead 
+ * Enables the RelMongo framework processing.<br>
+ * RelMongo allows to implement relations and associations between MongoDB collections <br>
+ * @see {@link OneToMany} {@link OneToOne}
  * @author Kais OMRI
  *
  */
-@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = { ElementType.TYPE })
 @Import(value = PersistenceConfiguration.class)
-public @interface EnableRelationalMongo {
+public @interface EnableRelMongo {
 
 }

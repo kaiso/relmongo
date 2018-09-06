@@ -6,7 +6,7 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "cars")
+@Document
 public class Car {
 
     @Id
@@ -47,6 +47,14 @@ public class Car {
 
     public void setOwner(Person owner) {
         this.owner = owner;
+    }
+
+    @Override
+    public String toString() {
+        return "Car{" +
+                "id=" + id +
+                ", manufacturer='" + manufacturer + '\'' +
+                '}';
     }
 
 }
