@@ -40,7 +40,7 @@ public @interface ManyToOne {
 	/**
 	 * The field that owns the relationship.
 	 * 
-	 * @since 2.0.0
+	 * @since 2.2.0
 	 */
 	String mappedBy() default "";
 

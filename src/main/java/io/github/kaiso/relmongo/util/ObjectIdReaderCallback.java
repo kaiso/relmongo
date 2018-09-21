@@ -15,6 +15,9 @@
 */
 package io.github.kaiso.relmongo.util;
 
+import io.github.kaiso.relmongo.exception.RelMongoConfigurationException;
+import io.github.kaiso.relmongo.exception.RelMongoProcessingException;
+
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.util.ReflectionUtils;
@@ -49,9 +52,9 @@ public class ObjectIdReaderCallback implements FieldCallback {
                 }
                 this.idField = field;
             } catch (IllegalArgumentException | IllegalAccessException e) {
-                throw new IllegalStateException("unable to access the @Id field", e);
+                throw new RelMongoConfigurationException("unable to access the @Id field", e);
             } catch (ClassCastException e) {
-                throw new IllegalStateException("the @Id field must be of type ObjectId or String", e);
+                throw new RelMongoConfigurationException("the @Id field must be of type ObjectId or String", e);
             }
         }
 
