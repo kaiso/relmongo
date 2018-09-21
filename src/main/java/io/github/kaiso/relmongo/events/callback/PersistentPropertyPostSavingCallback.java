@@ -27,17 +27,18 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
+
 /**
  * 
  * @author Kais OMRI
  *
  */
-public class PersistentPropertyCascadingSaveCallback implements FieldCallback {
+public class PersistentPropertyPostSavingCallback implements FieldCallback {
 
     private Object source;
     private MongoOperations mongoOperations;
 
-    public PersistentPropertyCascadingSaveCallback(Object source, MongoOperations mongoOperations) {
+    public PersistentPropertyPostSavingCallback(Object source, MongoOperations mongoOperations) {
         super();
         this.source = source;
         this.mongoOperations = mongoOperations;
@@ -46,21 +47,22 @@ public class PersistentPropertyCascadingSaveCallback implements FieldCallback {
     public void doWith(Field field) throws IllegalAccessException {
         ReflectionUtils.makeAccessible(field);
         if (field.isAnnotationPresent(OneToMany.class)) {
-            doCascade(field, field.getAnnotation(OneToMany.class).cascade());
+            doProcessing(field, field.getAnnotation(OneToMany.class).cascade(), field.getAnnotation(OneToMany.class).orphanRemoval());
         } else if (field.isAnnotationPresent(OneToOne.class)) {
-            doCascade(field, field.getAnnotation(OneToOne.class).cascade());
+            doProcessing(field, field.getAnnotation(OneToOne.class).cascade(), field.getAnnotation(OneToOne.class).orphanRemoval());
         }
 
     }
 
-    private void doCascade(Field field, CascadeType cascadeType) throws IllegalAccessException {
+    private void doProcessing(Field field, CascadeType cascadeType, boolean orphanRemoval) throws IllegalAccessException {
         Object child = field.get(source);
         if (child != null) {
             if (Collection.class.isAssignableFrom(child.getClass())) {
                 cascadeCollection(cascadeType, (Collection<?>) child);
-
+                removeOrphans(orphanRemoval, (Collection<?>) child);
             } else {
                 cascadeItem(cascadeType, child);
+                removeOrphans(orphanRemoval, child);
 
             }
         }
@@ -76,6 +78,18 @@ public class PersistentPropertyCascadingSaveCallback implements FieldCallback {
     private void cascadeCollection(CascadeType cascadeType, Collection<?> child) {
         if (Arrays.asList(CascadeType.PERSIST, CascadeType.ALL).contains(cascadeType)) {
             child.parallelStream().forEach(mongoOperations::save);
+        }
+    }
+
+    private void removeOrphans(Boolean orphanRemoval, Object child) {
+        if (Boolean.TRUE.equals(orphanRemoval)) {
+
+        }
+    }
+
+    private void removeOrphans(Boolean orphanRemoval, Collection<?> child) {
+        if (Boolean.TRUE.equals(orphanRemoval)) {
+
         }
     }
 

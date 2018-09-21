@@ -21,24 +21,34 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-
 /**
  * Describes Unidirectional OneToMany relation <br>
- * The referenced property for this association in the target object is allways the "_id"
+ * The referenced property for this association in the target object is allways
+ * the "_id"
+ * 
  * @author Kais OMRI
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface OneToMany {
-	/**
-	 * (Optional) Whether the association should be lazily loaded or must be eagerly
-	 * fetched.
-	 */
-	FetchType fetch() default FetchType.LAZY;
+    
+    /**
+     * (Optional) Whether the association should be lazily loaded or must be eagerly
+     * fetched.
+     */
+    FetchType fetch() default FetchType.LAZY;
 
-	/**
-	 * (Optional) The operations that must be cascaded to the target of the
-	 * association.
-	 */
-	CascadeType cascade() default CascadeType.NONE;
+    /**
+     * (Optional) The operations that must be cascaded to the target of the
+     * association.
+     */
+    CascadeType cascade() default CascadeType.NONE;
+
+    /**
+     * (Optional) Whether to apply the remove operation to documents that have been
+     * removed from the
+     * relationship and to cascade the remove operation to those documents.
+     * @since 2.3.0
+     */
+    boolean orphanRemoval() default false;
 }

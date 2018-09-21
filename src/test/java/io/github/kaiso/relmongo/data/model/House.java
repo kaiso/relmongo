@@ -11,17 +11,17 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class House {
 
     @Id
-    private ObjectId id;
+    private String id;
     private String address;
 
     @ManyToOne(mappedBy = "houses", fetch = FetchType.LAZY)
     private Person owner;
 
-    public ObjectId getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(ObjectId id) {
+    public void setId(String id) {
         this.id = id;
     }
 

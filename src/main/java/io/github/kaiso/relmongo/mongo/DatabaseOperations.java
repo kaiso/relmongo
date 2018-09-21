@@ -76,9 +76,15 @@ public final class DatabaseOperations {
         query.addCriteria(Criteria.where(propertyName).is(value));
         return mongoOperations.findOne(query, clazz);
     }
-    
+
     public static void saveObjects(MongoOperations mongoOperations, Object obj) {
         mongoOperations.save(obj);
+    }
+
+    public static void removeObjectsByIds(MongoOperations mongoOperations, String collectionName, List<ObjectId> objectsIds) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("_id").in(objectsIds));
+        mongoOperations.remove(query, collectionName);
     }
 
 }

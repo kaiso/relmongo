@@ -31,22 +31,31 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface OneToOne {
-	/**
-	 * (Optional) Whether the association should be lazily loaded or must be eagerly
-	 * fetched.
-	 */
-	FetchType fetch() default FetchType.LAZY;
+    /**
+     * (Optional) Whether the association should be lazily loaded or must be eagerly
+     * fetched.
+     */
+    FetchType fetch() default FetchType.LAZY;
 
-	/**
-	 * (Optional) The operations that must be cascaded to the target of the
-	 * association.
-	 */
-	CascadeType cascade() default CascadeType.NONE;
+    /**
+     * (Optional) The operations that must be cascaded to the target of the
+     * association.
+     */
+    CascadeType cascade() default CascadeType.NONE;
 
-	/**
-	 * The field that owns the relationship.
-	 * 
-	 * @since 2.0.0
-	 */
-	String mappedBy() default "";
+    /**
+     * The field that owns the relationship.
+     * 
+     * @since 2.2.0
+     */
+    String mappedBy() default "";
+
+    /**
+     * (Optional) Whether to apply the remove operation to documents that have been
+     * removed from the
+     * relationship and to cascade the remove operation to those documents.
+     * @since 2.3.0
+     */
+    boolean orphanRemoval() default false;
+
 }

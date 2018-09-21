@@ -17,10 +17,10 @@
 package io.github.kaiso.relmongo.events.processor;
 
 import io.github.kaiso.relmongo.events.callback.PersistentPropertyCascadingRemoveCallback;
-import io.github.kaiso.relmongo.events.callback.PersistentPropertyCascadingSaveCallback;
 import io.github.kaiso.relmongo.events.callback.PersistentPropertyConvertingCallback;
 import io.github.kaiso.relmongo.events.callback.PersistentPropertyLoadingCallback;
 import io.github.kaiso.relmongo.events.callback.PersistentPropertyPostLoadingCallback;
+import io.github.kaiso.relmongo.events.callback.PersistentPropertyPostSavingCallback;
 import io.github.kaiso.relmongo.events.callback.PersistentPropertySavingCallback;
 import io.github.kaiso.relmongo.model.LoadableObjectsMetadata;
 import io.github.kaiso.relmongo.mongo.PersistentRelationResolver;
@@ -61,7 +61,7 @@ public class RelMongoProcessor extends AbstractMongoEventListener<Object> {
 
     @Override
     public void onBeforeSave(BeforeSaveEvent<Object> event) {
-        PersistentPropertySavingCallback callback = new PersistentPropertySavingCallback(event.getDocument());
+        PersistentPropertySavingCallback callback = new PersistentPropertySavingCallback(event.getDocument(), event.getCollectionName(), mongoOperations);
         ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
         super.onBeforeSave(event);
     }
@@ -83,7 +83,7 @@ public class RelMongoProcessor extends AbstractMongoEventListener<Object> {
     @Override
     public void onAfterSave(AfterSaveEvent<Object> event) {
         super.onAfterSave(event);
-        PersistentPropertyCascadingSaveCallback callback = new PersistentPropertyCascadingSaveCallback(event.getSource(), mongoOperations);
+        PersistentPropertyPostSavingCallback callback = new PersistentPropertyPostSavingCallback(event.getSource(), mongoOperations);
         ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
 
     }
