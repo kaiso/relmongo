@@ -27,6 +27,7 @@ import io.github.kaiso.relmongo.mongo.PersistentRelationResolver;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.event.AbstractMongoEventListener;
 import org.springframework.data.mongodb.core.mapping.event.AfterConvertEvent;
 import org.springframework.data.mongodb.core.mapping.event.AfterLoadEvent;
@@ -50,50 +51,62 @@ public class RelMongoProcessor extends AbstractMongoEventListener<Object> {
 
     @Override
     public void onAfterLoad(AfterLoadEvent<Object> event) {
-        PersistentPropertyLoadingCallback callback = new PersistentPropertyLoadingCallback(event.getSource());
-        ReflectionUtils.doWithFields(event.getType(), callback);
-        List<LoadableObjectsMetadata> loadableObjects = callback.getLoadableObjects();
-        if (!loadableObjects.isEmpty()) {
-            PersistentRelationResolver.resolveOnLoading(mongoOperations, loadableObjects, event.getSource());
+        if (event.getType().isAnnotationPresent(Document.class)) {
+            PersistentPropertyLoadingCallback callback = new PersistentPropertyLoadingCallback(event.getSource());
+            ReflectionUtils.doWithFields(event.getType(), callback);
+            List<LoadableObjectsMetadata> loadableObjects = callback.getLoadableObjects();
+            if (!loadableObjects.isEmpty()) {
+                PersistentRelationResolver.resolveOnLoading(mongoOperations, loadableObjects, event.getSource());
+            }
         }
         super.onAfterLoad(event);
     }
 
     @Override
     public void onBeforeSave(BeforeSaveEvent<Object> event) {
-        PersistentPropertySavingCallback callback = new PersistentPropertySavingCallback(event.getDocument(), event.getCollectionName(), mongoOperations);
-        ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
+        if (event.getSource().getClass().isAnnotationPresent(Document.class)) {
+            PersistentPropertySavingCallback callback = new PersistentPropertySavingCallback(event.getDocument(), event.getCollectionName(), mongoOperations);
+            ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
+        }
         super.onBeforeSave(event);
     }
 
     @Override
     public void onBeforeConvert(BeforeConvertEvent<Object> event) {
-        PersistentPropertyConvertingCallback callback = new PersistentPropertyConvertingCallback(event.getSource());
-        ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
+        if (event.getSource().getClass().isAnnotationPresent(Document.class)) {
+            PersistentPropertyConvertingCallback callback = new PersistentPropertyConvertingCallback(event.getSource());
+            ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
+        }
         super.onBeforeConvert(event);
     }
 
     @Override
     public void onAfterConvert(AfterConvertEvent<Object> event) {
-        PersistentPropertyPostLoadingCallback callback = new PersistentPropertyPostLoadingCallback(event.getSource(), event.getDocument(), mongoOperations);
-        ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
+        if (event.getSource().getClass().isAnnotationPresent(Document.class)) {
+            PersistentPropertyPostLoadingCallback callback = new PersistentPropertyPostLoadingCallback(event.getSource(), event.getDocument(), mongoOperations);
+            ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
+        }
         super.onAfterConvert(event);
     }
 
     @Override
     public void onAfterSave(AfterSaveEvent<Object> event) {
         super.onAfterSave(event);
-        PersistentPropertyPostSavingCallback callback = new PersistentPropertyPostSavingCallback(event.getSource(), mongoOperations);
-        ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
+        if (event.getSource().getClass().isAnnotationPresent(Document.class)) {
+            PersistentPropertyPostSavingCallback callback = new PersistentPropertyPostSavingCallback(event.getSource(), mongoOperations);
+            ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
+        }
 
     }
 
     @Override
     public void onBeforeDelete(BeforeDeleteEvent<Object> event) {
         super.onBeforeDelete(event);
-        PersistentPropertyCascadingRemoveCallback callback = new PersistentPropertyCascadingRemoveCallback(event.getDocument(), mongoOperations,
-                event.getType());
-        callback.doProcessing();
+        if (event.getType().isAnnotationPresent(Document.class)) {
+            PersistentPropertyCascadingRemoveCallback callback = new PersistentPropertyCascadingRemoveCallback(event.getDocument(), mongoOperations,
+                    event.getType());
+            callback.doProcessing();
+        }
     }
 
 }

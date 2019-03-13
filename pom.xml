@@ -5,7 +5,7 @@
 
 	<groupId>io.github.kaiso.relmongo</groupId>
 	<artifactId>relmongo</artifactId>
-	<version>3.0.0</version>
+	<version>3.0.1-RC1</version>
 	<packaging>jar</packaging>
 
 	<name>relmongo</name>
