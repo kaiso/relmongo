@@ -15,6 +15,7 @@
 */
 package io.github.kaiso.relmongo.mongo;
 
+import io.github.kaiso.relmongo.exception.RelMongoProcessingException;
 import io.github.kaiso.relmongo.util.RelMongoConstants;
 
 import org.bson.Document;
@@ -60,7 +61,11 @@ public final class DocumentUtils {
     }
 
     public static ObjectId mapIdentifier(Object object) {
-        return ((org.bson.Document) object).getObjectId("_id");
+        Object id = ((org.bson.Document) object).get("_id");
+        if (id == null) {
+            throw new RelMongoProcessingException("_id must not be null");
+        }
+        return id instanceof ObjectId ? (ObjectId) id : new ObjectId((String) id);
     }
 
 }

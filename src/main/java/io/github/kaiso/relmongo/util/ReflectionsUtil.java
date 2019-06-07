@@ -32,7 +32,11 @@ public final class ReflectionsUtil {
 
     public static Class<?> getGenericType(Field field) {
         if (Collection.class.isAssignableFrom(field.getType())) {
-            return (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+            try {
+                return (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+            } catch (ClassCastException e) {
+                //do nothing if the generic type is also generic we do not take it into account
+            }
         }
         return field.getType();
     }

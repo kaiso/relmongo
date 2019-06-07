@@ -16,7 +16,6 @@
 package io.github.kaiso.relmongo.util;
 
 import io.github.kaiso.relmongo.exception.RelMongoConfigurationException;
-import io.github.kaiso.relmongo.exception.RelMongoProcessingException;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
