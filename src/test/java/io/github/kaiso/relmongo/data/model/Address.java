@@ -5,7 +5,10 @@ import io.github.kaiso.relmongo.annotation.ManyToOne;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.LocalDateTime;
 
 @Document(collection = "addresses")
 public class Address {
@@ -16,6 +19,9 @@ public class Address {
 
     @ManyToOne(mappedBy = "addresses", fetch = FetchType.LAZY)
     private Person owner;
+    
+    @LastModifiedDate
+    private LocalDateTime lastModifiedDate;
 
     public ObjectId getId() {
         return id;
@@ -31,5 +37,13 @@ public class Address {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public LocalDateTime getLastModifiedDate() {
+        return lastModifiedDate;
+    }
+
+    public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
+        this.lastModifiedDate = lastModifiedDate;
     }
 }

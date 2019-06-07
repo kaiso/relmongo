@@ -30,6 +30,7 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
+
 /**
  * 
  * @author Kais OMRI
@@ -39,18 +40,14 @@ public class PersistentPropertyCascadingRemoveCallback implements FieldCallback 
 
     private Document source;
     private MongoOperations mongoOperations;
-    private ObjectId id;
+    private Boolean loaded = Boolean.FALSE;
     private Object entity;
 
     public PersistentPropertyCascadingRemoveCallback(Document source, MongoOperations mongoOperations, Class<?> clazz) {
         super();
         this.source = source;
         this.mongoOperations = mongoOperations;
-        this.id = this.source.getObjectId("_id");
-        if (this.id != null) {
-            Collection<?> findByIds = DatabaseOperations.findByIds(mongoOperations, clazz, id);
-            this.entity = findByIds != null && !findByIds.isEmpty() ? findByIds.iterator().next() : null;
-        }
+        this.entity = mongoOperations.getConverter().read(clazz, source);
     }
 
     public void doWith(Field field) throws IllegalAccessException {
@@ -64,36 +61,48 @@ public class PersistentPropertyCascadingRemoveCallback implements FieldCallback 
     }
 
     private void doCascade(Field field, CascadeType cascadeType) throws IllegalAccessException {
+        if (!Arrays.asList(CascadeType.REMOVE, CascadeType.ALL).contains(cascadeType)) {
+            return;
+        }
+        loadEntity();
         Object child = field.get(entity);
         if (child != null) {
             if (Collection.class.isAssignableFrom(child.getClass())) {
-                cascadeCollection(cascadeType, (Collection<?>) child);
+                cascadeCollection((Collection<?>) child);
 
             } else {
-                cascadeItem(cascadeType, child);
+                cascadeItem(child);
 
             }
         }
 
     }
 
-    private void cascadeItem(CascadeType cascadeType, Object child) {
-        if (Arrays.asList(CascadeType.REMOVE, CascadeType.ALL).contains(cascadeType)) {
-            mongoOperations.remove(child);
-        }
+    private void cascadeItem(Object child) {
+        mongoOperations.remove(child);
     }
 
-    private void cascadeCollection(CascadeType cascadeType, Collection<?> child) {
-        if (Arrays.asList(CascadeType.REMOVE, CascadeType.ALL).contains(cascadeType)) {
-            child.parallelStream().forEach(mongoOperations::remove);
-        }
+    private void cascadeCollection(Collection<?> child) {
+        child.parallelStream().forEach(mongoOperations::remove);
     }
 
     public void doProcessing() {
-        if (id == null || entity == null) {
+        if (entity == null) {
             return;
         }
         ReflectionUtils.doWithFields(entity.getClass(), this);
+    }
+
+    private void loadEntity() {
+        if (!loaded) {
+            Object sourceId = this.source.get("_id");
+            if (sourceId != null) {
+                ObjectId id = sourceId instanceof ObjectId ? (ObjectId) sourceId : new ObjectId((String) sourceId);
+                Collection<?> findByIds = DatabaseOperations.findByIds(mongoOperations, entity.getClass(), id);
+                this.entity = findByIds != null && !findByIds.isEmpty() ? findByIds.iterator().next() : null;
+            }
+            loaded = Boolean.TRUE;
+        }
     }
 
 }
