@@ -135,6 +135,6 @@ a design or technical choice problems.
 [maven img]:https://maven-badges.herokuapp.com/maven-central/io.github.kaiso.relmongo/relmongo/badge.svg
 [build]:https://travis-ci.org/kaiso/relmongo
 [build img]:https://travis-ci.org/kaiso/relmongo.svg?branch=master
-[coverage]:https://coveralls.io/repos/github/kaiso/relmongo/badge.svg?branch=master
-[coverage img]:https://coveralls.io/github/kaiso/relmongo?branch=master
+[coverage img]:https://coveralls.io/repos/github/kaiso/relmongo/badge.svg?branch=master
+[coverage]:https://coveralls.io/github/kaiso/relmongo?branch=master
 
