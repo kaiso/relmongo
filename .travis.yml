@@ -5,4 +5,4 @@ jdk:
   - oraclejdk8
 
 script:
-- ./mvnw clean package
+- ./mvnw clean verify coveralls:report

@@ -5,6 +5,7 @@
 [![][license img]][license]
 [![][maven img]][maven]
 [![][build img]][build]
+[![][coverage img]][coverage]
 [![Join the chat at https://gitter.im/relmongo/general](https://badges.gitter.im/relmongo/general.svg)](https://gitter.im/relmongo/general?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 <br>
 
@@ -134,5 +135,6 @@ a design or technical choice problems.
 [maven img]:https://maven-badges.herokuapp.com/maven-central/io.github.kaiso.relmongo/relmongo/badge.svg
 [build]:https://travis-ci.org/kaiso/relmongo
 [build img]:https://travis-ci.org/kaiso/relmongo.svg?branch=master
-
+[coverage]:https://coveralls.io/repos/github/kaiso/relmongo/badge.svg?branch=master
+[coverage img]:https://coveralls.io/github/kaiso/relmongo?branch=master
 
