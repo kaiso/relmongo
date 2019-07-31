@@ -5,5 +5,5 @@ sudo: false
 script:
 - export JAVA_HOME=$HOME/openjdk8
 - export PATH="$JAVA_HOME/bin:$PATH"
-- ~/bin/install-jdk.sh --install openjdk8 --target $JAVA_HOME
+- /bin/install-jdk.sh --install openjdk8 --target $JAVA_HOME
 - ./mvnw clean verify coveralls:report
