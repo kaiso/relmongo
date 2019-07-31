@@ -1,8 +1,9 @@
 language: java
 sudo: false
 
-jdk:
-  - oraclejdk8
 
 script:
+- export JAVA_HOME=$HOME/openjdk8
+- export PATH="$JAVA_HOME/bin:$PATH"
+- $TRAVIS_BUILD_DIR/install-jdk.sh --install openjdk8 --target $JAVA_HOME
 - ./mvnw clean verify coveralls:report
