@@ -3,5 +3,4 @@ jdk: openjdk8
 
 
 script:
-- echo " Java Home : ${JAVA_HOME}"
 - ./mvnw clean verify coveralls:report
