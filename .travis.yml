@@ -1,9 +1,7 @@
-sudo: false
+anguage: java
+jdk: openjdk8
 
 
 script:
-- export JAVA_HOME=$HOME/openjdk8
-- export PATH="$JAVA_HOME/bin:$PATH"
-- echo "Travis build dir ${TRAVIS_BUILD_DIR}"
-- ${TRAVIS_BUILD_DIR}/bin/install-jdk.sh --install openjdk8 --target $JAVA_HOME
+- echo " Java Home : ${JAVA_HOME}"
 - ./mvnw clean verify coveralls:report
