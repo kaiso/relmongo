@@ -6,6 +6,7 @@
 [![][maven img]][maven]
 [![][build img]][build]
 [![][coverage img]][coverage]
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/kaiso/relmongo)](https://github.com/kaiso/relmongo/releases)
 [![Join the chat at https://gitter.im/relmongo/general](https://badges.gitter.im/relmongo/general.svg)](https://gitter.im/relmongo/general?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 <br>
 
