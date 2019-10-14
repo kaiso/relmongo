@@ -3,4 +3,4 @@ jdk: openjdk8
 
 
 script:
-- ./mvnw clean verify coveralls:report
+- ./mvnw clean verify
