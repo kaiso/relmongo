@@ -1,8 +1,6 @@
-language: java
-sudo: false
+anguage: java
+jdk: openjdk8
 
-jdk:
-  - oraclejdk8
 
 script:
-- ./mvnw clean package
+- ./mvnw clean verify coveralls:report
