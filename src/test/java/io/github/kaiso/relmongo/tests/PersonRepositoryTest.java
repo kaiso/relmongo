@@ -16,11 +16,10 @@ import io.github.kaiso.relmongo.tests.common.AbstractBaseTest;
 import io.github.kaiso.relmongo.util.RelMongoConstants;
 
 import org.bson.Document;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.dao.DuplicateKeyException;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,7 +32,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@ContextConfiguration(classes = { PersonRepositoryTest.class })
 public class PersonRepositoryTest extends AbstractBaseTest {
 
     @Autowired
@@ -51,17 +49,6 @@ public class PersonRepositoryTest extends AbstractBaseTest {
     @Autowired
     private DrivingLicenseRepository drivingLicenseRepository;
 
-    @Autowired
-    private MongoOperations mongoOperations;
-
-    @BeforeEach
-    public void beforeEach() {
-        mongoOperations.dropCollection(DrivingLicense.class);
-        mongoOperations.dropCollection(Passport.class);
-        mongoOperations.dropCollection(Person.class);
-        mongoOperations.dropCollection(House.class);
-        mongoOperations.dropCollection(Car.class);
-    }
 
     @Test
     public void shouldSaveAndRetreive() {
@@ -74,17 +61,34 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         assertTrue(retreivedEmployee.isPresent());
         assertEquals(retreivedEmployee.get().getId(), employee.getId());
     }
+    
+    @Test()
+    public void shouldFailOnIndexedField() {
+        Assertions.assertThrows(DuplicateKeyException.class, () -> {
+            Car car1 = new Car(1);
+            car1.setColor(Color.BLUE);
+            car1.setManufacturer("BMW");
+            Car car2 = new Car(1);
+            car2.setColor(Color.RED);
+            car2.setManufacturer("BMW");
+            
+            carRepository.save(car1);
+            carRepository.save(car2);
+          });
+    }
 
     @Test
     public void shouldPersistOnlyIdOnOneToManyRelation() {
-        Car car1 = new Car();
+        Car car1 = new Car(1);
         car1.setColor(Color.BLUE);
         car1.setManufacturer("BMW");
-        Car car2 = new Car();
-        car2.setColor(Color.BLUE);
+        Car car2 = new Car(2);
+        car2.setColor(Color.RED);
         car2.setManufacturer("BMW");
+
         carRepository.save(car1);
         carRepository.save(car2);
+
         Person person = new Person();
         person.setName("Dave");
         person.setEmail("dave@mail.com");
@@ -132,24 +136,24 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         Optional<Person> retreivedPerson = repository.findById(person.getId().toString());
         assertNotNull(retreivedPerson.get().getPassport());
         assertEquals(retreivedPerson.get().getPassport().getNumber(), "12345");
-        //mappedBy
+        // mappedBy
         assertEquals(retreivedPerson.get().getPassport().getOwner().getId(), retreivedPerson.get().getId());
-        
+
     }
 
     @Test
     public void shouldFetchOneToManyRelation() {
-        Car car = new Car();
+        Car car = new Car(1);
         car.setColor(Color.BLUE);
         String manufacturer = "BMW";
         car.setManufacturer(manufacturer);
-       // carRepository.save(car);
-        
-        Car car1 = new Car();
+        // carRepository.save(car);
+
+        Car car1 = new Car(2);
         car1.setColor(Color.RED);
         String manufacturer1 = "JAGUAR";
         car1.setManufacturer(manufacturer1);
-       // carRepository.save(car1);
+        // carRepository.save(car1);
 
         Person person = new Person();
         person.setName("Dave");
@@ -161,7 +165,7 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         assertFalse(retreivedPerson.get().getCars().isEmpty());
         assertTrue(retreivedPerson.get().getCars().get(0).getColor().equals(Color.BLUE));
         assertTrue(retreivedPerson.get().getCars().get(0).getManufacturer().equals(manufacturer));
-        //mappedBy
+        // mappedBy
         assertEquals(retreivedPerson.get().getCars().get(0).getOwner().getId(), retreivedPerson.get().getId());
     }
 
@@ -180,7 +184,7 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         assertFalse(retreivedPerson.get().getHouses().isEmpty());
         assertTrue(retreivedPerson.get().getHouses().get(0).getAddress().equals("Paris"));
         assertTrue(retreivedPerson.get().getHouses() instanceof LazyLoadingProxy);
-        //mappedBy
+        // mappedBy
         assertEquals(retreivedPerson.get().getHouses().get(0).getOwner().getId(), retreivedPerson.get().getId());
     }
 
@@ -224,13 +228,13 @@ public class PersonRepositoryTest extends AbstractBaseTest {
 
     @Test
     public void shouldReplaceOneToManyRelation() {
-        Car car = new Car();
+        Car car = new Car(1);
         car.setColor(Color.BLUE);
         String manufacturer = "BMW";
         car.setManufacturer(manufacturer);
         carRepository.save(car);
 
-        Car car1 = new Car();
+        Car car1 = new Car(2);
         car1.setColor(Color.RED);
         String manufacturer1 = "JAGUAR";
         car1.setManufacturer(manufacturer1);
@@ -284,13 +288,13 @@ public class PersonRepositoryTest extends AbstractBaseTest {
 
     @Test
     public void shouldRemoveElementFromOneToManyRelation() {
-        Car car = new Car();
+        Car car = new Car(1);
         car.setColor(Color.BLUE);
         String manufacturer = "BMW";
         car.setManufacturer(manufacturer);
         carRepository.save(car);
 
-        Car car1 = new Car();
+        Car car1 = new Car(2);
         car1.setColor(Color.RED);
         String manufacturer1 = "JAGUAR";
         car1.setManufacturer(manufacturer1);
@@ -301,9 +305,9 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         person.setEmail("dave@mail.com");
         person.setCars(Arrays.asList(new Car[] { car, car1 }));
         repository.save(person);
-        
+
         Optional<Person> retreivedPerson = repository.findById(person.getId().toString());
-        
+
         assertTrue(retreivedPerson.get().getCars().size() == 2);
         assertTrue(retreivedPerson.get().getCars().get(0).getColor().equals(Color.BLUE));
         assertTrue(retreivedPerson.get().getCars().get(0).getManufacturer().equals(manufacturer));
@@ -318,10 +322,10 @@ public class PersonRepositoryTest extends AbstractBaseTest {
 
     @Test
     public void shouldFetchAggreation() {
-        Car car1 = new Car();
+        Car car1 = new Car(1);
         car1.setColor(Color.BLUE);
         car1.setManufacturer("BMW");
-        Car car2 = new Car();
+        Car car2 = new Car(2);
         car2.setColor(Color.RED);
         car2.setManufacturer("JAGUAR");
         carRepository.save(car1);
@@ -344,8 +348,6 @@ public class PersonRepositoryTest extends AbstractBaseTest {
 
         House house1 = new House();
         house.setAddress("Bir El Hafey");
-        
-        
 
         Person person = new Person();
         person.setName("Dave");

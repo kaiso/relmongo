@@ -16,6 +16,8 @@
 
 package io.github.kaiso.relmongo.annotation;
 
+import org.springframework.data.annotation.Reference;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -30,6 +32,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
+@Reference
 public @interface ManyToOne {
 	/**
 	 * (Optional) Whether the association should be lazily loaded or must be eagerly

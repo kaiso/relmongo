@@ -25,7 +25,6 @@ import io.github.kaiso.relmongo.events.callback.PersistentPropertySavingCallback
 import io.github.kaiso.relmongo.model.LoadableObjectsMetadata;
 import io.github.kaiso.relmongo.mongo.PersistentRelationResolver;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.event.AbstractMongoEventListener;
@@ -46,8 +45,12 @@ import java.util.List;
  */
 public class RelMongoProcessor extends AbstractMongoEventListener<Object> {
 
-    @Autowired
     private MongoOperations mongoOperations;
+    
+    public RelMongoProcessor(MongoOperations mongoOperations) {
+        super();
+        this.mongoOperations = mongoOperations;
+    }
 
     @Override
     public void onAfterLoad(AfterLoadEvent<Object> event) {

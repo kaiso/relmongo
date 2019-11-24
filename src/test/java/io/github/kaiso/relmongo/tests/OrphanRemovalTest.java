@@ -7,11 +7,8 @@ import io.github.kaiso.relmongo.data.repository.PersonRepository;
 import io.github.kaiso.relmongo.tests.common.AbstractBaseTest;
 
 import org.bson.Document;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.test.context.ContextConfiguration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,21 +19,11 @@ import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@ContextConfiguration(classes = { OrphanRemovalTest.class })
+
 public class OrphanRemovalTest extends AbstractBaseTest {
 
     @Autowired
     private PersonRepository repository;
-
-    @Autowired
-    private MongoOperations mongoOperations;
-
-    @BeforeEach
-    public void beforeEach() {
-        mongoOperations.dropCollection(Person.class);
-        mongoOperations.dropCollection(Address.class);
-        mongoOperations.dropCollection(PersonDetails.class);
-    }
 
     @Test
     public void shouldRemoveOrphanOnOneToMany() {
