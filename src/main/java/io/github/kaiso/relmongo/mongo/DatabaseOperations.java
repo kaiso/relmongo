@@ -72,9 +72,9 @@ public final class DatabaseOperations {
     }
 
     public static <T> T findByPropertyValue(MongoOperations mongoOperations, Class<T> clazz, String propertyName, Object value) {
-        Query query = new Query();
-        query.addCriteria(Criteria.where(propertyName).is(value));
-        return mongoOperations.findOne(query, clazz);
+        BasicDBObject query = new BasicDBObject(propertyName, new BasicDBObject("$eq", value));
+        FindIterable<Document> result = mongoOperations.getCollection(mongoOperations.getCollectionName(clazz)).find(query).limit(1);
+        return result.iterator().hasNext() ? mongoOperations.getConverter().read(clazz,result.iterator().next()) : null;
     }
 
     public static void saveObjects(MongoOperations mongoOperations, Object obj) {

@@ -14,11 +14,8 @@ import io.github.kaiso.relmongo.data.repository.PersonRepository;
 import io.github.kaiso.relmongo.lazy.LazyLoadingProxy;
 import io.github.kaiso.relmongo.tests.common.AbstractBaseTest;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -27,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@ContextConfiguration(classes = { MappedByTest.class })
+
 public class MappedByTest extends AbstractBaseTest {
 
     @Autowired
@@ -45,21 +42,11 @@ public class MappedByTest extends AbstractBaseTest {
     @Autowired
     private DrivingLicenseRepository drivingLicenseRepository;
 
-    @Autowired
-    private MongoOperations mongoOperations;
 
-    @BeforeEach
-    public void beforeEach() {
-        mongoOperations.dropCollection(DrivingLicense.class);
-        mongoOperations.dropCollection(Passport.class);
-        mongoOperations.dropCollection(Person.class);
-        mongoOperations.dropCollection(House.class);
-        mongoOperations.dropCollection(Car.class);
-    }
 
     @Test
     public void shouldFetchManyToOneMappedBy() {
-        Car car = new Car();
+        Car car = new Car(0);
         car.setColor(Color.BLUE);
         String manufacturer = "BMW";
         car.setManufacturer(manufacturer);

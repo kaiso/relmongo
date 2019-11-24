@@ -5,8 +5,6 @@ import com.mongodb.client.FindIterable;
 import io.github.kaiso.relmongo.data.model.Car;
 import io.github.kaiso.relmongo.data.model.Color;
 import io.github.kaiso.relmongo.data.model.DrivingLicense;
-import io.github.kaiso.relmongo.data.model.House;
-import io.github.kaiso.relmongo.data.model.Passport;
 import io.github.kaiso.relmongo.data.model.Person;
 import io.github.kaiso.relmongo.data.model.State;
 import io.github.kaiso.relmongo.data.repository.DrivingLicenseRepository;
@@ -16,11 +14,8 @@ import io.github.kaiso.relmongo.util.RelMongoConstants;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.test.context.ContextConfiguration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@ContextConfiguration(classes = { CascadingTest.class })
+
 public class CascadingTest extends AbstractBaseTest {
 
     @Autowired
@@ -45,18 +40,6 @@ public class CascadingTest extends AbstractBaseTest {
     @Autowired
     private DrivingLicenseRepository drivingLicenseRepository;
 
-    @Autowired
-    private MongoOperations mongoOperations;
-
-    @BeforeEach
-    public void beforeEach() {
-        mongoOperations.dropCollection(DrivingLicense.class);
-        mongoOperations.dropCollection(Passport.class);
-        mongoOperations.dropCollection(Person.class);
-        mongoOperations.dropCollection(House.class);
-        mongoOperations.dropCollection(Car.class);
-        mongoOperations.dropCollection(State.class);
-    }
 
     @Test
     public void shouldCascadeSaveOneToOneObject() {
@@ -96,11 +79,11 @@ public class CascadingTest extends AbstractBaseTest {
 
     @Test
     public void shouldCascadeSaveOneToManyObjects() {
-        Car car1 = new Car();
+        Car car1 = new Car(1);
         car1.setColor(Color.BLUE);
         car1.setManufacturer("BMW");
 
-        Car car2 = new Car();
+        Car car2 = new Car(2);
         car2.setColor(Color.BLUE);
         car2.setManufacturer("BMW");
 
@@ -139,11 +122,11 @@ public class CascadingTest extends AbstractBaseTest {
 
     @Test
     public void shouldCascadeRemoveCollection() {
-        Car car1 = new Car();
+        Car car1 = new Car(1);
         car1.setColor(Color.BLUE);
         car1.setManufacturer("BMW");
 
-        Car car2 = new Car();
+        Car car2 = new Car(2);
         car2.setColor(Color.BLUE);
         car2.setManufacturer("BMW");
 

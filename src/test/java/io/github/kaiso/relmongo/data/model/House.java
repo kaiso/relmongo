@@ -3,7 +3,6 @@ package io.github.kaiso.relmongo.data.model;
 import io.github.kaiso.relmongo.annotation.FetchType;
 import io.github.kaiso.relmongo.annotation.ManyToOne;
 
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 

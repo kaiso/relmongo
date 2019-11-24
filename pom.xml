@@ -5,7 +5,7 @@
 
 	<groupId>io.github.kaiso.relmongo</groupId>
 	<artifactId>relmongo</artifactId>
-	<version>3.0.1</version>
+	<version>3.1.0</version>
 	<packaging>jar</packaging>
 
 	<name>relmongo</name>
@@ -18,9 +18,9 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<maven.plugin.source.version>3.0.1</maven.plugin.source.version>
 		<maven.plugin.javadoc.version>3.0.1</maven.plugin.javadoc.version>
-		<spring.data.version>2.1.8.RELEASE</spring.data.version>
-		<spring.version>5.1.7.RELEASE</spring.version>
-		<mongo.driver.version>3.9.1</mongo.driver.version>
+		<spring.data.version>2.2.1.RELEASE</spring.data.version>
+		<spring.version>5.2.1.RELEASE</spring.version>
+		<mongo.driver.version>3.11.2</mongo.driver.version>
 		<junit.jupiter.version>5.4.1</junit.jupiter.version>
 		<junit.platform.version>1.4.2</junit.platform.version>
 	</properties>
@@ -61,21 +61,17 @@
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-mongodb</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.mongodb</groupId>
-					<artifactId>mongo-java-driver</artifactId>
-				</exclusion>
-			</exclusions>
 			<version>${spring.data.version}</version>
 			<scope>provided</scope>
 		</dependency>
+		
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
 			<version>${spring.version}</version>
 			<scope>provided</scope>
 		</dependency>
+		
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
@@ -83,19 +79,12 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>org.mongodb</groupId>
-			<artifactId>mongodb-driver</artifactId>
-			<version>${mongo.driver.version}</version>
-			<scope>provided</scope>
-		</dependency>
 
 		<dependency>
-			<groupId>org.mongodb</groupId>
-			<artifactId>mongo-java-driver</artifactId>
-			<version>${mongo.driver.version}</version>
+		    <groupId>org.mongodb</groupId>
+		    <artifactId>mongodb-driver-async</artifactId>
+		    <version>${mongo.driver.version}</version>
 		</dependency>
-
 
 		<!-- test dependencies -->
 		<dependency>
@@ -115,7 +104,7 @@
 		<dependency>
 			<groupId>de.flapdoodle.embed</groupId>
 			<artifactId>de.flapdoodle.embed.mongo</artifactId>
-			<version>2.1.1</version>
+			<version>2.2.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
