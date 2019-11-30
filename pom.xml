@@ -10,7 +10,7 @@
 
 	<name>relmongo</name>
 	<url>https://kaiso.github.io/relmongo/</url>
-	<description>Make use of relations in MongoDB</description>
+	<description>Java relationship-enabled domain model persistence framework for MongoDB</description>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
