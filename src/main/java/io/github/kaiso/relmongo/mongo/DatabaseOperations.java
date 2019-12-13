@@ -65,7 +65,7 @@ public final class DatabaseOperations {
         return result.iterator().hasNext() ? result.iterator().next() : null;
     }
 
-    public static <T> Collection<T> findByIds(MongoOperations mongoOperations, Class<T> clazz, ObjectId... id) {
+    public static <T> Collection<T> findByIds(MongoOperations mongoOperations, Class<T> clazz, Object... id) {
         Query query = new Query();
         query.addCriteria(Criteria.where("_id").in(Arrays.asList(id)));
         return mongoOperations.find(query, clazz);

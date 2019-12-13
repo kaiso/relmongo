@@ -60,12 +60,12 @@ public final class DocumentUtils {
         return dbObject.keySet().size() > counter;
     }
 
-    public static ObjectId mapIdentifier(Object object) {
+    public static Object mapIdentifier(Object object) {
         Object id = ((org.bson.Document) object).get("_id");
         if (id == null) {
             throw new RelMongoProcessingException("_id must not be null");
         }
-        return id instanceof ObjectId ? (ObjectId) id : new ObjectId((String) id);
+        return id instanceof ObjectId ? (ObjectId) id : (String) id;
     }
 
 }

@@ -88,7 +88,7 @@ public class PersistentPropertyPostLoadingCallback implements FieldCallback {
                     identifierList.add(DocumentUtils.mapIdentifier(relations));
                 }
             } else {
-                identifierList.add(document.getObjectId("_id"));
+                identifierList.add(document.get("_id"));
             }
             field.set(source, PersistentRelationResolver.lazyLoader(field.getType(), mongoOperations,
                     identifierList, mappedByInfos.getMappedByJoinProperty(), type,

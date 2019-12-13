@@ -171,7 +171,7 @@ public class PersonRepositoryTest extends AbstractBaseTest {
 
     @Test
     public void shouldLazyLoadCollection() {
-        House house = new House();
+        House house = new House("H4");
         house.setAddress("Paris");
         houseRepository.save(house);
         Person person = new Person();
@@ -190,7 +190,7 @@ public class PersonRepositoryTest extends AbstractBaseTest {
 
     @Test
     public void shouldLazyLoadObject() {
-        DrivingLicense drivingLicense = new DrivingLicense();
+        DrivingLicense drivingLicense = new DrivingLicense("ZUY0001");
         drivingLicense.setNumber("12345");
         drivingLicenseRepository.save(drivingLicense);
         Person person = new Person();
@@ -264,7 +264,7 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         passport.setNumber("12345");
         passportRepository.save(passport);
 
-        DrivingLicense drivingLicense = new DrivingLicense();
+        DrivingLicense drivingLicense = new DrivingLicense("OK9223");
         drivingLicense.setNumber("12345");
         drivingLicenseRepository.save(drivingLicense);
 
@@ -343,10 +343,10 @@ public class PersonRepositoryTest extends AbstractBaseTest {
 
     @Test
     public void shouldNotLazyLoadAggregation() {
-        House house = new House();
+        House house = new House("H5");
         house.setAddress("Paris");
 
-        House house1 = new House();
+        House house1 = new House("H7");
         house.setAddress("Bir El Hafey");
 
         Person person = new Person();

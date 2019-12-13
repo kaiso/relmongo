@@ -23,10 +23,10 @@ public class AggregationTest extends AbstractBaseTest {
 
     @Test
     public void shouldFetchThroughAggregation() {
-        House house = new House();
+        House house = new House("H1");
         house.setAddress("Paris");
 
-        House house1 = new House();
+        House house1 = new House("H2");
         house.setAddress("Bir El Hafey");
 
         Person person = new Person();

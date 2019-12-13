@@ -13,7 +13,6 @@ import io.github.kaiso.relmongo.tests.common.AbstractBaseTest;
 import io.github.kaiso.relmongo.util.RelMongoConstants;
 
 import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -44,12 +43,11 @@ public class CascadingTest extends AbstractBaseTest {
     @Test
     public void shouldCascadeSaveOneToOneObject() {
         State state = new State();
-        ObjectId drivingLicenseId = ObjectId.get();
+        String drivingLicenseId = "ZZ12345";
         state.setName("Paris");
-        DrivingLicense drivingLicense = new DrivingLicense();
+        DrivingLicense drivingLicense = new DrivingLicense(drivingLicenseId);
         drivingLicense.setNumber("12345");
         drivingLicense.setState(state);
-        drivingLicense.setId(drivingLicenseId);
         drivingLicenseRepository.save(drivingLicense);
 
         Person person = new Person();

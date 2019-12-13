@@ -5,7 +5,6 @@ import io.github.kaiso.relmongo.annotation.FetchType;
 import io.github.kaiso.relmongo.annotation.JoinProperty;
 import io.github.kaiso.relmongo.annotation.OneToOne;
 
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -13,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class DrivingLicense {
 
     @Id
-    private ObjectId id;
+    private String id;
 
     private String number;
 
@@ -24,11 +23,19 @@ public class DrivingLicense {
     @OneToOne(mappedBy = "drivingLicense", fetch = FetchType.LAZY)
     private Person owner;
 
-    public ObjectId getId() {
+    public DrivingLicense(String id) {
+        this.id = id;
+    }
+
+    public DrivingLicense() {
+        super();
+    }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(ObjectId id) {
+    public void setId(String id) {
         this.id = id;
     }
 

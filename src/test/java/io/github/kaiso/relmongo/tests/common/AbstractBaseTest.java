@@ -49,13 +49,6 @@ public abstract class AbstractBaseTest {
 
     @AfterEach
     public void afterEach() {
-//         mongoOperations.dropCollection(DrivingLicense.class);
-//         mongoOperations.dropCollection(Passport.class);
-//         mongoOperations.dropCollection(Person.class);
-//         mongoOperations.dropCollection(House.class);
-//         mongoOperations.dropCollection(Car.class);
-//         mongoOperations.dropCollection(State.class);
-//         mongoOperations.dropCollection(Address.class);
          mongoOperations.remove(DrivingLicense.class).all();
          mongoOperations.remove(Passport.class).all();
          mongoOperations.remove(Person.class).all();

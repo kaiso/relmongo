@@ -15,6 +15,14 @@ public class House {
 
     @ManyToOne(mappedBy = "houses", fetch = FetchType.LAZY)
     private Person owner;
+    
+    
+    
+
+    public House(String id) {
+        super();
+        this.id = id;
+    }
 
     public String getId() {
         return id;

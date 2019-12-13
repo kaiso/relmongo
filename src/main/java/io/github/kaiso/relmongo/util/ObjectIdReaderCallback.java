@@ -30,7 +30,7 @@ import java.util.Optional;
  */
 public class ObjectIdReaderCallback implements FieldCallback {
 
-    private ObjectId objectId;
+    private Object objectId;
     private Field idField;
     private Object source;
 
@@ -45,7 +45,7 @@ public class ObjectIdReaderCallback implements FieldCallback {
             try {
                 Object value = field.get(source);
                 if (value instanceof String) {
-                    objectId = new ObjectId((String) value);
+                    objectId = value;
                 } else {
                     objectId = (ObjectId) value;
                 }
@@ -59,7 +59,7 @@ public class ObjectIdReaderCallback implements FieldCallback {
 
     }
 
-    public Optional<ObjectId> getObjectId() {
+    public Optional<Object> getObjectId() {
         return Optional.ofNullable(objectId);
     }
 

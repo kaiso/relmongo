@@ -69,7 +69,7 @@ public class MappedByTest extends AbstractBaseTest {
     
     @Test
     public void shouldFetchLazyManyToOneMappedBy() {
-        House house = new House();
+        House house = new House("H3");
         house.setAddress("Paris");
         house = houseRepository.save(house);
         Person person = new Person();
@@ -105,7 +105,7 @@ public class MappedByTest extends AbstractBaseTest {
 
     @Test
     public void shouldfetchLazyOneToOneMappedBy() {
-        DrivingLicense drivingLicense = new DrivingLicense();
+        DrivingLicense drivingLicense = new DrivingLicense("036227777");
         drivingLicense.setNumber("12345");
         drivingLicense = drivingLicenseRepository.save(drivingLicense);
         Person person = new Person();
@@ -113,7 +113,7 @@ public class MappedByTest extends AbstractBaseTest {
         person.setEmail("dave@mail.com");
         person.setDrivingLicense(drivingLicense);
         person = repository.save(person);
-        Optional<DrivingLicense> result = drivingLicenseRepository.findById(drivingLicense.getId().toString());
+        Optional<DrivingLicense> result = drivingLicenseRepository.findById(drivingLicense.getId());
         assertTrue(result.get().getOwner() instanceof LazyLoadingProxy);
         assertEquals(result.get().getOwner().getId(), person.getId());
     }
