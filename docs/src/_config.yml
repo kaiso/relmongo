@@ -1,0 +1,34 @@
+theme: jekyll-theme-architect
+
+defaults:
+  - 
+    scope:
+      path: "README.md"
+    values:
+      permalink: "index.html"
+      layout: default
+      title: "RelMongo | Java relationship-enabled domain model persistence framework for MongoDB"
+      source_url: "https://kaiso.github.io/relmongo/"
+      description: "A simple framework on top of Spring Data MongoDB which implements references or 
+      associations using @OneToMany @OneToOne @ManyToOne annotations, this framework is an alternative
+      for @DBRef"
+      keywords: "Spring, Data, MongoDB, Reference, Association, @OneToOne, @OneToMany, @ManyToOne, @DBRef, DBREF"
+
+# Conversion
+markdown            : kramdown
+highlighter         : rouge
+lsi                 : false
+excerpt_separator   : "\n\n"
+incremental         : false
+
+# Markdown Processors
+kramdown:
+  auto_ids          : true
+  entity_output     : as_char
+  toc_levels        : 1..6
+  smart_quotes      : lsquo,rsquo,ldquo,rdquo
+  input             : GFM
+  hard_wrap         : false
+  footnote_nr       : 1
+  show_warnings     : true
+

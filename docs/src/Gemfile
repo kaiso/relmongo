@@ -1,0 +1,6 @@
+# ./Gemfile
+#repositories
+source 'https://rubygems.org'
+#gems
+gem "jekyll-theme-architect"
+
