@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>RelMongo | Java relationship-enabled domain model persistence framework for MongoDB</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="assets/css/style.css?v=9e3d0000aa7312aede6211c40510bcb5b777bcd9" media="screen" type="text/css">
+    <link rel="stylesheet" href="assets/css/print.css" media="print" type="text/css">
+    <meta property="og:title" content="relmongo" />
+    <meta property="keywords" content="Spring, Data, MongoDB, Reference, Association, @OneToOne, @OneToMany, @ManyToOne, @DBRef, DBREF" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="description" content="A simple framework on top of Spring Data MongoDB which implements references or associations using @OneToMany @OneToOne @ManyToOne annotations, this framework is an alternative for @DBRef" />
+    <meta property="og:description" content="A simple framework on top of Spring Data MongoDB which implements references or associations using @OneToMany @OneToOne @ManyToOne annotations, this framework is an alternative for @DBRef" />
+    <link rel="canonical" href="https://kaiso.github.io/relmongo/" />
+    <meta property="og:url" content="https://kaiso.github.io/relmongo/" />
+    <meta property="og:site_name" content="relmongo" />
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <a href="https://kaiso.github.io/relmongo/">
+          <h1>relmongo</h1>
+        </a>
+        <h2>RelMongo | Java relationship-enabled domain model persistence framework for MongoDB</h2>
+        
+          <a href="https://kaiso.github.io/relmongo/" class="button"><small>View project on</small> GitHub</a>
+        
+        
+      </div>
+    </header>
+    <nav>
+      <a href="/">Home</a>
+    </nav>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+      <p align="center">
+  <img src="https://raw.githubusercontent.com/kaiso/relmongo/master/docs/images/logo.png" />
+</p>
+
+<hr />
+<h2 id="java-relationship-enabled-domain-model-persistence-framework-for-mongodb">Java relationship-enabled domain model persistence framework for MongoDB</h2>
+<hr />
+
+<p><a href="LICENSE-2.0.txt"><img src="https://img.shields.io/badge/License-Apache%202-blue.svg" alt="" /></a>
+<a href="http://search.maven.org/#search|gav|1|g:&quot;io.github.kaiso.relmongo&quot;%20AND%20a:&quot;relmongo&quot;"><img src="https://maven-badges.herokuapp.com/maven-central/io.github.kaiso.relmongo/relmongo/badge.svg" alt="" /></a>
+<a href="https://travis-ci.org/kaiso/relmongo"><img src="https://travis-ci.org/kaiso/relmongo.svg?branch=master" alt="" /></a>
+<a href="https://coveralls.io/github/kaiso/relmongo?branch=master"><img src="https://coveralls.io/repos/github/kaiso/relmongo/badge.svg?branch=master" alt="" /></a>
+<a href="https://github.com/kaiso/relmongo/releases"><img src="https://img.shields.io/github/v/release/kaiso/relmongo" alt="GitHub release (latest by date)" /></a>
+<a href="https://gitter.im/relmongo/general?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/relmongo/general.svg" alt="Join the chat at https://gitter.im/relmongo/general" /></a>
+<br /></p>
+
+<p>RelMongo allows to implement two-way relations and associations between MongoDB collections in a simple way <br />
+RelMongo is built in top of the <a href="https://projects.spring.io/spring-data-mongodb/">Spring Data MongoDB</a> framework.</p>
+<h1 id="features">Features</h1>
+<p>RelMongo provides :</p>
+<ul>
+  <li>@EnableRelMongo to enable RelMongo engine</li>
+  <li>@OneToMany annotation to address 1..N relations</li>
+  <li>@OneToOne annotation to address 1..1 relations</li>
+  <li>Two fetching methods ( LAZY and EAGER)</li>
+  <li>Cascading operations</li>
+  <li>Bidirectional mapping using the <code class="highlighter-rouge">mappedBy</code> attribute</li>
+</ul>
+
+<p>To get more details please see the <a href="https://github.com/kaiso/relmongo/releases">release notes</a>.</p>
+<h1 id="wiki">Wiki</h1>
+<p><a href="https://github.com/kaiso/relmongo/wiki">Take a tour in the RelMongo wiki</a></p>
+<h1 id="binaries">Binaries</h1>
+<ul>
+  <li>Maven
+    <div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nt">&lt;dependency&gt;</span>
+    <span class="nt">&lt;groupId&gt;</span>io.github.kaiso.relmongo<span class="nt">&lt;/groupId&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>relmongo<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;version&gt;</span>x.y.z<span class="nt">&lt;/version&gt;</span>
+ <span class="nt">&lt;/dependency&gt;</span>
+</code></pre></div>    </div>
+    <h1 id="compatibility-matrix">Compatibility Matrix</h1>
+  </li>
+</ul>
+
+<p><a href="https://github.com/kaiso/relmongo/wiki/Compatibility-Matrix">See compatibility on wiki</a></p>
+
+<h1 id="usage">Usage</h1>
+<p>RelMongo is very simple to use.<br />
+given two concepts with “one to *” relation<br /><br /></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  __________________                         __________________
+ |    Person        |                       |    Car           |
+ |__________________| 1                  *  |__________________|
+ |  name (string)   |----------------------&gt;|   ....           |
+ |  cars (list )    |                       |                  |
+ |                  |                       |                  |
+ |__________________|                       |__________________|
+</code></pre></div></div>
+
+<p>on your Person mongo entity simply add the following annotations from RelMongo :</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="nd">@OneToMany</span><span class="o">(</span><span class="n">fetch</span><span class="o">=</span><span class="nc">FetchType</span><span class="o">.</span><span class="na">EAGER</span><span class="o">,</span> <span class="n">cascade</span> <span class="o">=</span> <span class="nc">CascadeType</span><span class="o">.</span><span class="na">PERSIST</span><span class="o">)</span>
+    <span class="nd">@JoinProperty</span><span class="o">(</span><span class="n">name</span><span class="o">=</span><span class="s">"cars"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">Car</span><span class="o">&gt;</span> <span class="n">cars</span><span class="o">;</span>
+</code></pre></div></div>
+<p>and on your Spring App config class simply add @EnableRelMongo annotation:</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="o">...</span> <span class="nc">Other</span> <span class="nc">Annotations</span>
+    <span class="nd">@EnableRelMongo</span>
+    <span class="kd">public</span> <span class="nc">Class</span> <span class="nc">AppConfig</span>
+    
+</code></pre></div></div>
+<p>test your code :</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        <span class="nc">Car</span> <span class="n">car</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Car</span><span class="o">();</span>
+        <span class="n">car</span><span class="o">.</span><span class="na">setColor</span><span class="o">(</span><span class="nc">Color</span><span class="o">.</span><span class="na">BLUE</span><span class="o">);</span>
+        <span class="nc">String</span> <span class="n">manufacturer</span> <span class="o">=</span> <span class="s">"BMW"</span><span class="o">;</span>
+        <span class="n">car</span><span class="o">.</span><span class="na">setManufacturer</span><span class="o">(</span><span class="n">manufacturer</span><span class="o">);</span>
+        <span class="nc">Person</span> <span class="n">person</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Person</span><span class="o">();</span>
+        <span class="n">person</span><span class="o">.</span><span class="na">setName</span><span class="o">(</span><span class="s">"person"</span><span class="o">);</span>
+        <span class="n">person</span><span class="o">.</span><span class="na">setEmail</span><span class="o">(</span><span class="s">"person@mail.com"</span><span class="o">);</span>
+        <span class="n">person</span><span class="o">.</span><span class="na">setCars</span><span class="o">(</span><span class="nc">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="k">new</span> <span class="nc">Car</span><span class="o">[]</span> <span class="o">{</span><span class="n">car</span><span class="o">}));</span>
+        <span class="n">repository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="n">person</span><span class="o">);</span>
+        <span class="nc">Optional</span><span class="o">&lt;</span><span class="nc">Person</span><span class="o">&gt;</span> <span class="n">retreivedPerson</span> <span class="o">=</span> <span class="n">repository</span><span class="o">.</span><span class="na">findById</span><span class="o">(</span><span class="n">person</span><span class="o">.</span><span class="na">getId</span><span class="o">().</span><span class="na">toString</span><span class="o">());</span>
+        <span class="n">assertFalse</span><span class="o">(</span><span class="n">retreivedPerson</span><span class="o">.</span><span class="na">get</span><span class="o">().</span><span class="na">getCars</span><span class="o">().</span><span class="na">isEmpty</span><span class="o">());</span>
+        <span class="n">assertTrue</span><span class="o">(</span><span class="n">retreivedPerson</span><span class="o">.</span><span class="na">get</span><span class="o">().</span><span class="na">getCars</span><span class="o">().</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">).</span><span class="na">getColor</span><span class="o">().</span><span class="na">equals</span><span class="o">(</span><span class="nc">Color</span><span class="o">.</span><span class="na">BLUE</span><span class="o">));</span>
+        
+</code></pre></div></div>
+
+<p>database layout when executing this test :</p>
+<ul class="task-list">
+  <li>cars collection :
+    <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
+  <span class="nl">_id</span> <span class="p">:</span> <span class="nx">ObjectId</span><span class="p">(</span><span class="mi">5</span><span class="nx">afaff0e2557db3a140d0f85</span><span class="p">),</span>
+  <span class="nx">manufacturer</span> <span class="p">:</span> <span class="nx">BMW</span><span class="p">,</span>
+  <span class="nx">color</span> <span class="p">:</span> <span class="nx">BLUE</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+  </li>
+  <li>persons collection
+    <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
+  <span class="nl">_id</span> <span class="p">:</span> <span class="nx">ObjectId</span><span class="p">(</span><span class="mi">5</span><span class="nx">afaff0e2557db3a140d0f86</span><span class="p">),</span>
+  <span class="nx">name</span> <span class="p">:</span> <span class="nx">person</span><span class="p">,</span>
+  <span class="nx">email</span> <span class="p">:</span> <span class="nx">person</span><span class="p">@</span><span class="nd">mail</span><span class="p">.</span><span class="nx">com</span><span class="p">,</span>
+  <span class="nx">cars</span> <span class="p">:</span> <span class="p">[</span> 
+      <span class="p">{</span>
+          <span class="na">_id</span> <span class="p">:</span> <span class="nx">ObjectId</span><span class="p">(</span><span class="mi">5</span><span class="nx">afaff0e2557db3a140d0f85</span><span class="p">)</span>
+          <span class="na">_relmongo_target</span><span class="p">:</span> <span class="nx">cars</span>
+      <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+    <h1 id="strengths">Strengths</h1>
+  </li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />Based on <a href="https://spring.io/">Spring framework and derivatives</a></li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />Simple to use</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />Ready to use on existing database with few changes and in many cases with no changes</li>
+  <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />Bidirectional mapping
+    <h1 id="notes">Notes</h1>
+  </li>
+  <li class="task-list-item">RelMongo may be an alternative for DBREF which allow to use $lookup querries in mongodb while it is not possible with DBREF.</li>
+  <li class="task-list-item"><a href="https://www.mongodb.com/">MongoDB</a> is a document oriented database and is not suitable for relations, if you are using relations massively you may have
+a design or technical choice problems.</li>
+  <li class="task-list-item">RelMongo does not garantee integrity in the database since it is not implemented by MongoDB</li>
+</ul>
+
+<h1 id="license">LICENSE</h1>
+
+<p>© Copyright 2018 Kais OMRI.</p>
+
+<p>Licensed under the Apache License, Version 2.0 (the “License”);
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  http://www.apache.org/licenses/LICENSE-2.0
+</code></pre></div></div>
+
+<p>Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an “AS IS” BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.</p>
+
+
+    </section>
+      </div>
+      </div>
+    <footer>
+      &copy; 2019 Kais OMRI
+    </footer>
+  </body>
+</html>
