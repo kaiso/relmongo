@@ -8,7 +8,8 @@ defaults:
       permalink: "index.html"
       layout: default
       title: "RelMongo | Java relationship-enabled domain model persistence framework for MongoDB"
-      source_url: "https://kaiso.github.io/relmongo/"
+      url: "https://kaiso.github.io/relmongo/"
+      source_url: "https://github.com/kaiso/relmongo"
       description: "A simple framework on top of Spring Data MongoDB which implements references or 
       associations using @OneToMany @OneToOne @ManyToOne annotations, this framework is an alternative
       for @DBRef"
@@ -32,3 +33,6 @@ kramdown:
   footnote_nr       : 1
   show_warnings     : true
 
+  # Plugins
+  plugins:
+  - jekyll-sitemap
