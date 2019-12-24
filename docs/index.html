@@ -12,15 +12,40 @@
     <meta property="og:locale" content="en_US" />
     <meta name="description" content="A simple framework on top of Spring Data MongoDB which implements references or associations using @OneToMany @OneToOne @ManyToOne annotations, this framework is an alternative for @DBRef" />
     <meta property="og:description" content="A simple framework on top of Spring Data MongoDB which implements references or associations using @OneToMany @OneToOne @ManyToOne annotations, this framework is an alternative for @DBRef" />
-    <link rel="canonical" href="/index.html" />
+    <link rel="canonical" href="/relmongo/index.html" />
     <meta property="og:url" content="https://github.com/kaiso/relmongo" />
     <meta property="og:site_name" content="relmongo" />
+    <style>
+       ul.nav {
+          margin:0;
+          padding:0;
+          list-style:none;
+          height:36px; line-height:36px;
+          background:#3755a8; 
+          font-family:Arial, Helvetica, sans-serif;
+          font-size:13px;
+      }
+      ul.nav li {
+          border-right:1px solid #183157;
+          float:left;
+      }
+      ul.nav a {
+          display:block;
+          padding:0 28px;
+          color:#ccece6;
+          text-decoration:none;
+      }
+      ul.nav a:hover,
+      ul.nav li.current a {
+          background:#086754;
+      }
+    </style>
   </head>
 
   <body>
     <header>
       <div class="inner">
-        <a href="/index.html">
+        <a href="/relmongo/index.html">
           <h1>relmongo</h1>
         </a>
         <h2>RelMongo | Java relationship-enabled domain model persistence framework for MongoDB</h2>
@@ -31,7 +56,10 @@
       </div>
     </header>
     <nav>
-      <a href="/">Home</a>
+        <ul class="nav">
+            <li><a href="">Home</a></li>
+            <li><a href="https://github.com/kaiso/relmongo/wiki">Docs</a></li>
+        </ul>
     </nav>
 
     <div id="content-wrapper">

@@ -12,15 +12,40 @@
     <meta property="og:locale" content="en_US" />
     <meta name="description" content="{{page.description}}" />
     <meta property="og:description" content="{{page.description}}" />
-    <link rel="canonical" href="{{page.url}}" />
+    <link rel="canonical" href="{{ page.url | relative_url }}" />
     <meta property="og:url" content="{{page.source_url}}" />
     <meta property="og:site_name" content="relmongo" />
+    <style>
+       ul.nav {
+          margin:0;
+          padding:0;
+          list-style:none;
+          height:36px; line-height:36px;
+          background:#3755a8; 
+          font-family:Arial, Helvetica, sans-serif;
+          font-size:13px;
+      }
+      ul.nav li {
+          border-right:1px solid #183157;
+          float:left;
+      }
+      ul.nav a {
+          display:block;
+          padding:0 28px;
+          color:#ccece6;
+          text-decoration:none;
+      }
+      ul.nav a:hover,
+      ul.nav li.current a {
+          background:#086754;
+      }
+    </style>
   </head>
 
   <body>
     <header>
       <div class="inner">
-        <a href="{{page.url}}">
+        <a href="{{ page.url | relative_url }}">
           <h1>relmongo</h1>
         </a>
         <h2>{{ page.title }}</h2>
@@ -31,7 +56,10 @@
       </div>
     </header>
     <nav>
-      <a href="/">Home</a>
+        <ul class="nav">
+            <li><a href="">Home</a></li>
+            <li><a href="{{ page.docs_url }}">Docs</a></li>
+        </ul>
     </nav>
 
     <div id="content-wrapper">
