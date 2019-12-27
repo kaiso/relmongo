@@ -1,1 +1,0 @@
-Sitemap: https://kaiso.github.io/relmongo/sitemap.xml

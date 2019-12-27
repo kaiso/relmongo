@@ -25,10 +25,10 @@ defaults:
       title: "RelMongo | Java relationship-enabled domain model persistence framework for MongoDB"
       source_url: "https://github.com/kaiso/relmongo"
       docs_url: "https://github.com/kaiso/relmongo/wiki"
-      description: "A simple framework on top of Spring Data MongoDB which implements references or 
-      associations using @OneToMany @OneToOne @ManyToOne annotations, this framework is an alternative
-      for @DBRef"
-      keywords: "Spring, Data, MongoDB, Reference, Association, @OneToOne, @OneToMany, @ManyToOne, @DBRef, DBREF"
+      description: "RelMongo is a framework to use with Spring Data MongoDB which permits to use references or 
+      associations on MongoDB by providing @OneToMany @OneToOne @ManyToOne annotations, this framework is an alternative
+      for @DBRef or DBRef. RelMongo allows cascading and lazy loading"
+      keywords: "Java framework,Spring data mongodb dbref,Spring data mongodb @dbref,MongoDB references,MongoDB associatins,@OneToOne,@OneToMany,@ManyToOne,@DBRef,DBREF,mongodb lazy loading,mongodb cascading"
 
 # Conversion
 markdown            : kramdown
