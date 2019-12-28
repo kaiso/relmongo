@@ -16,7 +16,7 @@
 [![Join the chat at https://gitter.im/relmongo/general](https://badges.gitter.im/relmongo/general.svg)](https://gitter.im/relmongo/general?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 <br>
 
-RelMongo is a Java framework built on top of Spring data MongoDB that allows to implement two-way relationships or references between MongoDB documents and collections. RelMongo provides annotations like OneToMany, OneToOne and ManyToOne as an alternative for DBRef. RelMongo allows also cascading operations on MongoDB documents and lazy loading. The MongoDB references are persisted as embedded documents containing the target document reference id like DBRefs. RelMongo uses MongoDB manual references which make lookup stages work properly.
+RelMongo is a Java persistence framework of MongoDB domain objects whoose goal is to allow to map two-way relationships or references between MongoDB documents and collections. RelMongo provides annotations like OneToMany, OneToOne and ManyToOne as an alternative for DBRef and allows cascade operations and lazy loading of domain model objects. The MongoDB references are persisted as embedded documents containing the target document reference id like DBRefs. RelMongo uses MongoDB manual references which make lookup stages work properly.
 
 # Features
  RelMongo provides :
