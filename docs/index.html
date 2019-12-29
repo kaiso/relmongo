@@ -8,10 +8,10 @@
     <link rel="stylesheet" href="assets/css/style.css?v=9e3d0000aa7312aede6211c40510bcb5b777bcd9" media="screen" type="text/css">
     <link rel="stylesheet" href="assets/css/print.css" media="print" type="text/css">
     <meta property="og:title" content="relmongo" />
-    <meta property="keywords" content="Java framework,Spring data mongodb dbref,Spring data mongodb @dbref,MongoDB references,MongoDB associatins,@OneToOne,@OneToMany,@ManyToOne,@DBRef,DBREF,mongodb lazy loading,mongodb cascading" />
+    <meta property="keywords" content="Java framework,Spring data mongodb,references,associatins,dbref,@OneToOne,@OneToMany,@ManyToOne,lazy loading,cascading" />
     <meta property="og:locale" content="en_US" />
-    <meta name="description" content="RelMongo is a Java persistence framework of MongoDB domain objects whose goal is to allow to map two-way relationships or references between MongoDB documents and collections. RelMongo provides annotations like OneToMany, OneToOne and ManyToOne as an alternative for DBRef and allows cascade operations and lazy loading of domain model objects. The MongoDB references are persisted as embedded documents containing the target document reference id like DBRefs. RelMongo uses Spring data mongodb and MongoDB manual references which make lookup stages work properly and overcomes DBRef limitations." />
-    <meta property="og:description" content="RelMongo is a Java persistence framework of MongoDB domain objects whose goal is to allow to map two-way relationships or references between MongoDB documents and collections. RelMongo provides annotations like OneToMany, OneToOne and ManyToOne as an alternative for DBRef and allows cascade operations and lazy loading of domain model objects. The MongoDB references are persisted as embedded documents containing the target document reference id like DBRefs. RelMongo uses Spring data mongodb and MongoDB manual references which make lookup stages work properly and overcomes DBRef limitations." />
+    <meta name="description" content="Java framework based on spring data which implements references between MongoDB collections and overcomes DBRef limitations." />
+    <meta property="og:description" content="Java framework based on spring data which implements references between MongoDB collections and overcomes DBRef limitations." />
     <link rel="canonical" href="/relmongo/index.html" />
     <meta property="og:url" content="https://github.com/kaiso/relmongo" />
     <meta property="og:site_name" content="relmongo" />
@@ -69,10 +69,6 @@
   <img src="https://raw.githubusercontent.com/kaiso/relmongo/master/docs/images/logo.png" />
 </p>
 
-<hr />
-<h2 id="java-relationship-enabled-domain-model-persistence-framework-for-mongodb">Java relationship-enabled domain model persistence framework for MongoDB</h2>
-<hr />
-
 <p><a href="LICENSE-2.0.txt"><img src="https://img.shields.io/badge/License-Apache%202-blue.svg" alt="" /></a>
 <a href="http://search.maven.org/#search|gav|1|g:&quot;io.github.kaiso.relmongo&quot;%20AND%20a:&quot;relmongo&quot;"><img src="https://maven-badges.herokuapp.com/maven-central/io.github.kaiso.relmongo/relmongo/badge.svg" alt="" /></a>
 <a href="https://travis-ci.org/kaiso/relmongo"><img src="https://travis-ci.org/kaiso/relmongo.svg?branch=master" alt="" /></a>
@@ -81,10 +77,10 @@
 <a href="https://gitter.im/relmongo/general?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/relmongo/general.svg" alt="Join the chat at https://gitter.im/relmongo/general" /></a>
 <br /></p>
 
-<p>RelMongo is a Java persistence framework of MongoDB domain objects whose goal is to allow to map two-way relationships or references between MongoDB documents and collections. RelMongo provides annotations like OneToMany, OneToOne and ManyToOne as an alternative for DBRef and allows cascade operations and lazy loading of domain model objects. The MongoDB references are persisted as embedded documents containing the target document reference id like DBRefs. RelMongo uses Spring data mongodb and MongoDB manual references which make lookup stages work properly and overcomes DBRef limitations.</p>
+<p>RelMongo is a Java persistence framework for MongoDB whose goal is to allow to map two-way relationships or references between documents or collections. The framework provides annotations like OneToMany, OneToOne and ManyToOne as an alternative for DBRef and allows cascade operations and lazy loading of domain model objects. RelMongo uses Spring data mongodb and manual references which make lookup stages work properly and overcomes DBRef limitations.</p>
 
 <h1 id="features">Features</h1>
-<p>RelMongo provides :</p>
+
 <ul>
   <li>@EnableRelMongo to enable RelMongo engine</li>
   <li>@OneToMany annotation to address 1..N relations</li>
@@ -211,7 +207,7 @@ a design or technical choice problems.</li>
       </div>
       </div>
     <footer>
-      &copy; 2019 Kais OMRI
+      <center>&copy; 2019 Kais OMRI</center>
     </footer>
   </body>
 </html>
