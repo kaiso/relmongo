@@ -4,3 +4,4 @@ target/
 pom.xml.versionsBackup
 .settings/
 .sass-cache
+docs/robots.txt
