@@ -14,7 +14,7 @@
 
 RelMongo is a Java persistence framework for MongoDB whose goal is to allow to map two-way relationships or references between documents or collections. The framework provides annotations like OneToMany, OneToOne and ManyToOne as an alternative for DBRef and allows cascade operations and lazy loading of domain model objects. RelMongo uses Spring data mongodb and manual references which make lookup stages work properly and overcomes DBRef limitations.
 
-# Features
+## Features
  
  - @EnableRelMongo to enable RelMongo engine
  - @OneToMany annotation to address 1..N relations
@@ -24,9 +24,9 @@ RelMongo is a Java persistence framework for MongoDB whose goal is to allow to m
  - Bidirectional mapping using the `mappedBy` attribute
  
 To get more details please see the [release notes](https://github.com/kaiso/relmongo/releases).
-# Wiki
+## Wiki
  [Take a tour in the RelMongo wiki](https://github.com/kaiso/relmongo/wiki)
-# Binaries
+## Binaries
 - Maven
   ```xml
    <dependency>
@@ -35,11 +35,11 @@ To get more details please see the [release notes](https://github.com/kaiso/relm
       <version>x.y.z</version>
    </dependency>
   ```
-# Compatibility Matrix
+## Compatibility Matrix
 
 [See compatibility on wiki](https://github.com/kaiso/relmongo/wiki/Compatibility-Matrix)
 
-# Usage
+## Usage
 RelMongo is very simple to use.<br>
 given two concepts with "one to *" relation<br><br>
 
@@ -104,19 +104,19 @@ database layout when executing this test :
     ]
 }
 ``` 
-# Strengths
+## Strengths
 - [x] Based on [Spring framework and derivatives](https://spring.io/)
 - [x] Simple to use
 - [x] Ready to use on existing database with few changes and in many cases with no changes
 - [x] Bidirectional mapping
-# Notes
+## Notes
 - RelMongo may be an alternative for DBREF which allow to use $lookup querries in mongodb while it is not possible with DBREF.
 - [MongoDB](https://www.mongodb.com/) is a document oriented database and is not suitable for relations, if you are using relations massively you may have
 a design or technical choice problems.
 - RelMongo does not garantee integrity in the database since it is not implemented by MongoDB
 
 
-# LICENSE
+## LICENSE
 
    © Copyright 2018 Kais OMRI.
 

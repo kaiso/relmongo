@@ -80,7 +80,7 @@
 
 <p>RelMongo is a Java persistence framework for MongoDB whose goal is to allow to map two-way relationships or references between documents or collections. The framework provides annotations like OneToMany, OneToOne and ManyToOne as an alternative for DBRef and allows cascade operations and lazy loading of domain model objects. RelMongo uses Spring data mongodb and manual references which make lookup stages work properly and overcomes DBRef limitations.</p>
 
-<h1 id="features">Features</h1>
+<h2 id="features">Features</h2>
 
 <ul>
   <li>@EnableRelMongo to enable RelMongo engine</li>
@@ -92,9 +92,9 @@
 </ul>
 
 <p>To get more details please see the <a href="https://github.com/kaiso/relmongo/releases">release notes</a>.</p>
-<h1 id="wiki">Wiki</h1>
+<h2 id="wiki">Wiki</h2>
 <p><a href="https://github.com/kaiso/relmongo/wiki">Take a tour in the RelMongo wiki</a></p>
-<h1 id="binaries">Binaries</h1>
+<h2 id="binaries">Binaries</h2>
 <ul>
   <li>Maven
     <div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nt">&lt;dependency&gt;</span>
@@ -103,13 +103,13 @@
     <span class="nt">&lt;version&gt;</span>x.y.z<span class="nt">&lt;/version&gt;</span>
  <span class="nt">&lt;/dependency&gt;</span>
 </code></pre></div>    </div>
-    <h1 id="compatibility-matrix">Compatibility Matrix</h1>
+    <h2 id="compatibility-matrix">Compatibility Matrix</h2>
   </li>
 </ul>
 
 <p><a href="https://github.com/kaiso/relmongo/wiki/Compatibility-Matrix">See compatibility on wiki</a></p>
 
-<h1 id="usage">Usage</h1>
+<h2 id="usage">Usage</h2>
 <p>RelMongo is very simple to use.<br />
 given two concepts with “one to *” relation<br /><br /></p>
 
@@ -172,13 +172,13 @@ given two concepts with “one to *” relation<br /><br /></p>
   <span class="p">]</span>
 <span class="p">}</span>
 </code></pre></div>    </div>
-    <h1 id="strengths">Strengths</h1>
+    <h2 id="strengths">Strengths</h2>
   </li>
   <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />Based on <a href="https://spring.io/">Spring framework and derivatives</a></li>
   <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />Simple to use</li>
   <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />Ready to use on existing database with few changes and in many cases with no changes</li>
   <li class="task-list-item"><input type="checkbox" class="task-list-item-checkbox" disabled="disabled" checked="checked" />Bidirectional mapping
-    <h1 id="notes">Notes</h1>
+    <h2 id="notes">Notes</h2>
   </li>
   <li class="task-list-item">RelMongo may be an alternative for DBREF which allow to use $lookup querries in mongodb while it is not possible with DBREF.</li>
   <li class="task-list-item"><a href="https://www.mongodb.com/">MongoDB</a> is a document oriented database and is not suitable for relations, if you are using relations massively you may have
@@ -186,7 +186,7 @@ a design or technical choice problems.</li>
   <li class="task-list-item">RelMongo does not garantee integrity in the database since it is not implemented by MongoDB</li>
 </ul>
 
-<h1 id="license">LICENSE</h1>
+<h2 id="license">LICENSE</h2>
 
 <p>© Copyright 2018 Kais OMRI.</p>
 
