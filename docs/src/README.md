@@ -4,10 +4,10 @@
   <img src="https://raw.githubusercontent.com/kaiso/relmongo/master/docs/assets/images/logo.png" alt="the RelMongo project logo">
 </p>
 
-[![][license img]][license]
-[![][maven img]][maven]
-[![][build img]][build]
-[![][coverage img]][coverage]
+[![License badge][license img]][license]
+[![Maven badge][maven img]][maven]
+[![Build badge][build img]][build]
+[![Coverage badge][coverage img]][coverage]
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/kaiso/relmongo)](https://github.com/kaiso/relmongo/releases)
 [![Join the chat at https://gitter.im/relmongo/general](https://badges.gitter.im/relmongo/general.svg)](https://gitter.im/relmongo/general?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 <br>
