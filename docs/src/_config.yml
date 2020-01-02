@@ -25,8 +25,8 @@ defaults:
       title: "RelMongo | Java relationship-enabled domain model persistence framework for MongoDB"
       source_url: "https://github.com/kaiso/relmongo"
       docs_url: "https://github.com/kaiso/relmongo/wiki"
+      absolute_url: "https://kaiso.github.io/relmongo/"
       description: "Java relationships mapping tool for MongoDB providing cascading and lazy loading. RelMongo uses Spring data and manual references to overcome DBRef limitations"
-      keywords: "Java framework,Spring data mongodb,references,associatins,dbref,@OneToOne,@OneToMany,@ManyToOne,lazy loading,cascading"
 
 # Conversion
 markdown            : kramdown
