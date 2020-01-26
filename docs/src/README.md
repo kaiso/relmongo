@@ -1,7 +1,7 @@
 ---
 ---
 <p align="center">
-  <img src="https://raw.githubusercontent.com/kaiso/relmongo/master/docs/assets/images/logo.png" alt="the RelMongo project logo">
+  <img src="assets/images/RelMongo-logos_transparent.png" alt="the RelMongo project logo">
 </p>
 
 [![License badge][license img]][license]
