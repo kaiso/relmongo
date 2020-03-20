@@ -9,7 +9,10 @@ import io.github.kaiso.relmongo.tests.common.AbstractBaseTest;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.function.Consumer;
@@ -43,6 +46,32 @@ public class AuditingTest extends AbstractBaseTest {
         };
         mongoOperations.getCollection("addresses").find().forEach(f);
     }
+    
+    @Test
+    public void shouldRemoveByCriteria() {
+        Address address1 = new Address();
+        Address address2 = new Address();
+        address1.setLocation("1st street");
+        address2.setLocation("2st street");
+        Person person = new Person();
+        person.setName("Dave");
+        person.setEmail("dave@mail.com");
+        person.setAddresses(new LinkedList<Address>(Arrays.asList(address1, address2)));
+        repository.save(person);
+        Consumer<Document> f = new Consumer<Document>() {
+            @Override
+            public void accept(Document t) {
+                assertNotNull(t.get("lastModifiedDate"));
+            }
+        };
+        
+        
+        mongoOperations.getCollection("addresses").find().forEach(f);
+        
+        Criteria expression = Criteria.where("creationDate").lt(LocalDateTime.now());
+        Query query = new Query().addCriteria(expression);
+        mongoOperations.remove(query, Address.class).wasAcknowledged();
+    }
 
     @Test
     public void shouldPopulateAuditingOnSave() {
@@ -57,5 +86,7 @@ public class AuditingTest extends AbstractBaseTest {
         };
         mongoOperations.getCollection("addresses").find().forEach(f);
     }
+    
+    
 
 }
