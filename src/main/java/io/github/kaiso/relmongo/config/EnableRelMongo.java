@@ -35,7 +35,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = { ElementType.TYPE })
-@Import(value = PersistenceConfiguration.class)
+@Import(value = RelMongoConfiguration.class)
 public @interface EnableRelMongo {
 
 }

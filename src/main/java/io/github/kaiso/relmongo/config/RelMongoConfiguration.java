@@ -1,0 +1,100 @@
+
+/**
+*   Copyright 2018 Kais OMRI and authors.
+*
+*   Licensed under the Apache License, Version 2.0 (the "License");
+*   you may not use this file except in compliance with the License.
+*   You may obtain a copy of the License at
+*
+*      http://www.apache.org/licenses/LICENSE-2.0
+*
+*  Unless required by applicable law or agreed to in writing, software
+*  distributed under the License is distributed on an "AS IS" BASIS,
+*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*  See the License for the specific language governing permissions and
+*  limitations under the License.
+*/
+
+package io.github.kaiso.relmongo.config;
+
+import io.github.kaiso.relmongo.events.processor.RelMongoProcessor;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEventPublisherAware;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
+import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;
+import org.springframework.data.mongodb.core.mapping.MongoPersistentProperty;
+
+import java.util.concurrent.CompletableFuture;
+
+/**
+ * 
+ * @author Kais OMRI (kaiso)
+ *
+ */
+@Configuration
+public class RelMongoConfiguration {
+
+    private static final String LINE_SEPARATOR = System.lineSeparator();
+
+    private static final Logger logger = LoggerFactory.getLogger(RelMongoConfiguration.class);
+
+    private final ApplicationContext context;
+
+    public RelMongoConfiguration(ApplicationContext context) {
+        super();
+        this.context = context;
+        this.setUp();
+    }
+
+    @Bean
+    public RelMongoProcessor mongoEventListener(MongoOperations mongoOperations) {
+        return new RelMongoProcessor(mongoOperations);
+    }
+
+    
+    public void setUp() {
+        CompletableFuture.runAsync(() -> {
+            if (context.getBeanNamesForType(MongoTemplate.class).length > 0) {
+                MongoTemplate template = context.getBean(MongoTemplate.class);
+                MappingContext<? extends MongoPersistentEntity<?>, MongoPersistentProperty> mappingContext = template.getConverter().getMappingContext();
+                if (mappingContext instanceof RelMongoMappingContext) {
+                    RelMongoMappingContext relMongoMappingContext = (RelMongoMappingContext) mappingContext;
+                    if (relMongoMappingContext.isAutoIndexCreation()) {
+                        logger.warn(
+                            "Index auto creation is deprecated and will be disabled by default in the next releases {} applications should manually set up indexes to avoid compatibility problems and performance issues",
+                            LINE_SEPARATOR);
+
+                        RelMongoPersistentEntityIndexResolver indexResolver = new RelMongoPersistentEntityIndexResolver(relMongoMappingContext);
+                        RelMongoPersistentEntityIndexCreator relMongoPersistentEntityIndexCreator = new RelMongoPersistentEntityIndexCreator(
+                            relMongoMappingContext,
+                            template,
+                            indexResolver);
+
+                        ((GenericApplicationContext) context).registerBean("relMongoPersistentEntityIndexCreator",
+                            RelMongoPersistentEntityIndexCreator.class,
+                            () -> relMongoPersistentEntityIndexCreator,
+                            bd -> bd.setLazyInit(false));
+
+                        ((ApplicationEventPublisherAware) mappingContext).setApplicationEventPublisher(context);
+                        ((ConfigurableApplicationContext) context).addApplicationListener(relMongoPersistentEntityIndexCreator);
+                    }
+                } else if (mappingContext instanceof MongoMappingContext && ((MongoMappingContext) mappingContext).isAutoIndexCreation()) {
+                    logger.warn(
+                        "Index auto creation is enabled on defautl MongoMappingContext, this will cause index creation problems on associations {} Consider using io.github.kaiso.relmongo.config.RelMongoMappingContext instead of spring default MongoMappingContext or disable index auto creation",
+                        LINE_SEPARATOR);
+                }
+            }
+        });
+    }
+
+}

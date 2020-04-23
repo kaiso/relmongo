@@ -33,7 +33,6 @@ import org.springframework.data.mongodb.core.convert.DefaultDbRefResolver;
 import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -84,6 +83,7 @@ public class TestContextConfiguration extends AbstractMongoClientConfiguration {
                     _mongod = _mongodExe.start();
 
                     _mongo = MongoClients.create("mongodb://localhost:55777");
+                    
                     logger.info("MongoDB started");
                 }
             }
@@ -113,9 +113,9 @@ public class TestContextConfiguration extends AbstractMongoClientConfiguration {
 
     @Bean
     @Primary
-    @Override
-    public MongoMappingContext mongoMappingContext() throws ClassNotFoundException {
-        MongoMappingContext context = new MongoMappingContext();
+    //@Override
+    public RelMongoMappingContext customMappingContext() throws ClassNotFoundException {
+        RelMongoMappingContext context = new RelMongoMappingContext();
         context.setInitialEntitySet(new EntityScanner(applicationContext)
             .scan(Document.class, Persistent.class));
         context.setSimpleTypeHolder(customConversions().getSimpleTypeHolder());
@@ -134,7 +134,7 @@ public class TestContextConfiguration extends AbstractMongoClientConfiguration {
     @Override
     public MappingMongoConverter mappingMongoConverter() throws Exception {
         DbRefResolver dbRefResolver = new DefaultDbRefResolver(mongoDbFactory());
-        MappingMongoConverter converter = new MappingMongoConverter(dbRefResolver, mongoMappingContext());
+        MappingMongoConverter converter = new MappingMongoConverter(dbRefResolver, customMappingContext());
         converter.setCustomConversions(customConversions());
         converter.afterPropertiesSet();
         return converter;

@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.mongodb.core.index.IndexInfo;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -49,7 +50,6 @@ public class PersonRepositoryTest extends AbstractBaseTest {
     @Autowired
     private DrivingLicenseRepository drivingLicenseRepository;
 
-
     @Test
     public void shouldSaveAndRetreive() {
         Person employee = new Person();
@@ -61,7 +61,7 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         assertTrue(retreivedEmployee.isPresent());
         assertEquals(retreivedEmployee.get().getId(), employee.getId());
     }
-    
+
     @Test()
     public void shouldFailOnIndexedField() {
         Assertions.assertThrows(DuplicateKeyException.class, () -> {
@@ -71,10 +71,10 @@ public class PersonRepositoryTest extends AbstractBaseTest {
             Car car2 = new Car(1);
             car2.setColor(Color.RED);
             car2.setManufacturer("BMW");
-            
+
             carRepository.save(car1);
             carRepository.save(car2);
-          });
+        });
     }
 
     @Test
@@ -359,6 +359,31 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         assertTrue(findAll.get(0) != null);
         assertTrue(findAll.get(0).getHouses().size() == 2);
         assertFalse(findAll.get(0).getHouses() instanceof LazyLoadingProxy);
+    }
+
+    @Test
+    public void shouldFindByQueryAnnotation() {
+        Passport passport = new Passport();
+        passport.setNumber("12345");
+        passportRepository.save(passport);
+        Person person = new Person();
+        person.setName("Dave");
+        person.setEmail("dave@mail.com");
+        person.setPassport(passport);
+        repository.save(person);
+        Optional<Person> found = repository.findByPassport(passport.getId().toHexString());
+        assertTrue(found.isPresent());
+        assertEquals(found.get().getPassport().getId(), passport.getId());
+    }
+
+    @Test
+    public void shouldEnsureIndex() {
+        Passport passport = new Passport();
+        passport.setNumber("12345");
+        passportRepository.save(passport);
+        List<IndexInfo> indexInfos = mongoOperations.indexOps(Passport.class).getIndexInfo();
+        assertEquals(2, indexInfos.size());
+        assertTrue(indexInfos.stream().anyMatch(i -> i.getName().equals("number")));
     }
 
 }

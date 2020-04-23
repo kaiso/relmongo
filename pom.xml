@@ -5,7 +5,7 @@
 
 	<groupId>io.github.kaiso.relmongo</groupId>
 	<artifactId>relmongo</artifactId>
-	<version>3.2.1</version>
+	<version>3.3.3</version>
 	<packaging>jar</packaging>
 
 	<name>relmongo</name>
@@ -18,8 +18,8 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<maven.plugin.source.version>3.0.1</maven.plugin.source.version>
 		<maven.plugin.javadoc.version>3.0.1</maven.plugin.javadoc.version>
-		<spring.data.version>2.2.1.RELEASE</spring.data.version>
-		<spring.version>5.2.1.RELEASE</spring.version>
+		<spring.data.version>2.2.6.RELEASE</spring.data.version>
+		<spring.version>5.2.5.RELEASE</spring.version>
 		<mongo.driver.version>3.11.2</mongo.driver.version>
 		<junit.jupiter.version>5.4.1</junit.jupiter.version>
 		<junit.platform.version>1.4.2</junit.platform.version>
@@ -64,14 +64,14 @@
 			<version>${spring.data.version}</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
 			<version>${spring.version}</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
@@ -81,9 +81,9 @@
 
 
 		<dependency>
-		    <groupId>org.mongodb</groupId>
-		    <artifactId>mongodb-driver-async</artifactId>
-		    <version>${mongo.driver.version}</version>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongodb-driver-async</artifactId>
+			<version>${mongo.driver.version}</version>
 		</dependency>
 
 		<!-- test dependencies -->
@@ -144,6 +144,18 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
 			<version>2.11.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-yaml</artifactId>
+			<version>2.7.3</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.5.4</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

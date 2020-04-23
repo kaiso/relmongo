@@ -22,15 +22,16 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
 /**
- * @deprecated use {@link EnableRelMongo} instead 
+ * @deprecated use {@link EnableRelMongo} instead
  * @author Kais OMRI
  *
  */
 @Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = { ElementType.TYPE })
-@Import(value = PersistenceConfiguration.class)
+@Import(value = RelMongoConfiguration.class)
 public @interface EnableRelationalMongo {
 
 }
