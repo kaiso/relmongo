@@ -30,7 +30,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface JoinProperty {
 	/**
-	 * the name of the attribute that holds the reference to the associated object 
+	 * the name of the attribute that holds the reference to the associated object
+	 * @return name 
 	 */
     String  name() default "";
 }

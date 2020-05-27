@@ -22,7 +22,6 @@ import io.github.kaiso.relmongo.annotation.OneToOne;
 import io.github.kaiso.relmongo.mongo.DatabaseOperations;
 
 import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
@@ -40,14 +39,14 @@ public class PersistentPropertyCascadingRemoveCallback implements FieldCallback 
 
     private Document source;
     private MongoOperations mongoOperations;
-    private Boolean loaded = Boolean.FALSE;
     private Object entity;
+    private Class<?> entityType;
 
-    public PersistentPropertyCascadingRemoveCallback(Document source, MongoOperations mongoOperations, Class<?> clazz) {
+    public PersistentPropertyCascadingRemoveCallback(Document source, MongoOperations mongoOperations, Class<?> entityType) {
         super();
         this.source = source;
         this.mongoOperations = mongoOperations;
-        this.entity = mongoOperations.getConverter().read(clazz, source);
+        this.entityType = entityType;
     }
 
     public void doWith(Field field) throws IllegalAccessException {
@@ -64,7 +63,6 @@ public class PersistentPropertyCascadingRemoveCallback implements FieldCallback 
         if (!Arrays.asList(CascadeType.REMOVE, CascadeType.ALL).contains(cascadeType)) {
             return;
         }
-        loadEntity();
         Object child = field.get(entity);
         if (child != null) {
             if (Collection.class.isAssignableFrom(child.getClass())) {
@@ -87,6 +85,7 @@ public class PersistentPropertyCascadingRemoveCallback implements FieldCallback 
     }
 
     public void doProcessing() {
+        loadEntity();
         if (entity == null) {
             return;
         }
@@ -94,14 +93,12 @@ public class PersistentPropertyCascadingRemoveCallback implements FieldCallback 
     }
 
     private void loadEntity() {
-        if (!loaded) {
+        if (entity == null) {
             Object sourceId = this.source.get("_id");
             if (sourceId != null) {
-                ObjectId id = sourceId instanceof ObjectId ? (ObjectId) sourceId : new ObjectId((String) sourceId);
-                Collection<?> findByIds = DatabaseOperations.findByIds(mongoOperations, entity.getClass(), id);
+                Collection<?> findByIds = DatabaseOperations.findByIds(mongoOperations, entityType, sourceId);
                 this.entity = findByIds != null && !findByIds.isEmpty() ? findByIds.iterator().next() : null;
             }
-            loaded = Boolean.TRUE;
         }
     }
 

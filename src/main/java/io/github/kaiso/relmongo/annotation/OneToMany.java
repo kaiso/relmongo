@@ -16,8 +16,6 @@
 
 package io.github.kaiso.relmongo.annotation;
 
-import org.springframework.data.annotation.Reference;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -32,9 +30,9 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-@Reference
+@RelMongoAnnotation
 public @interface OneToMany {
-    
+
     /**
      * (Optional) Whether the association should be lazily loaded or must be eagerly
      * fetched.
@@ -51,6 +49,7 @@ public @interface OneToMany {
      * (Optional) Whether to apply the remove operation to documents that have been
      * removed from the
      * relationship and to cascade the remove operation to those documents.
+     * 
      * @since 2.3.0
      */
     boolean orphanRemoval() default false;

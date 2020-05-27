@@ -22,6 +22,8 @@ public class Address {
     
     @LastModifiedDate
     private LocalDateTime lastModifiedDate;
+    
+    private LocalDateTime creationDate = LocalDateTime.now();
 
     public ObjectId getId() {
         return id;
@@ -46,4 +48,9 @@ public class Address {
     public void setLastModifiedDate(LocalDateTime lastModifiedDate) {
         this.lastModifiedDate = lastModifiedDate;
     }
+
+    public LocalDateTime getCreationDate() {
+        return creationDate;
+    }
+
 }
