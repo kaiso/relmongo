@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/kaiso/relmongo/master/docs/assets/images/logo.png">
+  <img width="400" height="400" src="https://raw.githubusercontent.com/kaiso/relmongo/master/docs/assets/images/logo.png">
 </p>
 
 ***
