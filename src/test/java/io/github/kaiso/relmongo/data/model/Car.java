@@ -1,6 +1,10 @@
 package io.github.kaiso.relmongo.data.model;
 
+import io.github.kaiso.relmongo.annotation.CascadeType;
+import io.github.kaiso.relmongo.annotation.FetchType;
+import io.github.kaiso.relmongo.annotation.JoinProperty;
 import io.github.kaiso.relmongo.annotation.ManyToOne;
+import io.github.kaiso.relmongo.annotation.OneToOne;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -21,7 +25,9 @@ public class Car {
     @ManyToOne(mappedBy = "cars")
     private Person owner;
 
-    
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinProperty(name = "location")
+    private State location;
     
     public Car(int identifier) {
         super();
@@ -71,6 +77,14 @@ public class Car {
 
     public void setIdentifier(int identifier) {
         this.identifier = identifier;
+    }
+
+    public State getLocation() {
+        return location;
+    }
+
+    public void setLocation(State location) {
+        this.location = location;
     }
 
     @Override

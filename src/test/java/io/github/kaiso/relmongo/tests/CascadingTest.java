@@ -2,6 +2,7 @@ package io.github.kaiso.relmongo.tests;
 
 import com.mongodb.client.FindIterable;
 
+import io.github.kaiso.relmongo.data.model.Address;
 import io.github.kaiso.relmongo.data.model.Car;
 import io.github.kaiso.relmongo.data.model.Color;
 import io.github.kaiso.relmongo.data.model.DrivingLicense;
@@ -13,23 +14,22 @@ import io.github.kaiso.relmongo.tests.common.AbstractBaseTest;
 import io.github.kaiso.relmongo.util.RelMongoConstants;
 
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 
 public class CascadingTest extends AbstractBaseTest {
 
@@ -39,16 +39,14 @@ public class CascadingTest extends AbstractBaseTest {
     @Autowired
     private DrivingLicenseRepository drivingLicenseRepository;
 
-
     @Test
-    public void shouldCascadeSaveOneToOneObject() {
+    public void shouldCascadeSaveOneToOneMultiLevel() {
         State state = new State();
         String drivingLicenseId = "ZZ12345";
         state.setName("Paris");
         DrivingLicense drivingLicense = new DrivingLicense(drivingLicenseId);
         drivingLicense.setNumber("12345");
         drivingLicense.setState(state);
-        drivingLicenseRepository.save(drivingLicense);
 
         Person person = new Person();
         person.setName("Dave");
@@ -56,70 +54,61 @@ public class CascadingTest extends AbstractBaseTest {
         person.setDrivingLicense(drivingLicense);
         repository.save(person);
 
-        FindIterable<Document> drivingLicenses = mongoOperations.getCollection("drivingLicenses").find();
-        AtomicInteger count = new AtomicInteger(0);
-        AtomicReference<Document> drvDoc = new AtomicReference<Document>(null);
-        Consumer<Document> filter = new Consumer<Document>() {
+        Iterator<Document> iterator = mongoOperations.getCollection("drivingLicenses").find().iterator();
 
-            @Override
-            public void accept(Document t) {
-                count.incrementAndGet();
-                drvDoc.set(t);
-            }
-        };
-        drivingLicenses.forEach(filter);
-        assertTrue(count.get() == 1);
-        assertEquals(drvDoc.get().get("_id"), drivingLicenseId);
+        assertEquals(iterator.next().get("_id"), drivingLicenseId);
+        assertFalse(iterator.hasNext());
         Document document = mongoOperations.getCollection("states").find().iterator().next();
         assertNotNull(document);
         assertEquals("Paris", document.get("name"));
     }
 
     @Test
-    public void shouldCascadeSaveOneToManyObjects() {
-        Car car1 = new Car(1);
-        car1.setColor(Color.BLUE);
-        car1.setManufacturer("BMW");
+    public void shouldCascadeSaveOneToManyMultiLevel() {
 
-        Car car2 = new Car(2);
-        car2.setColor(Color.BLUE);
-        car2.setManufacturer("BMW");
+        State state = new State();
+        ObjectId stateId = ObjectId.get();
+        state.setId(stateId);
+        state.setName("El Goussa");
+        Address address1 = new Address();
+        Address address2 = new Address();
+        String location1 = "1st street";
+        address1.setLocation(location1);
+        address1.setState(state);
+        String location2 = "2st street";
+        address2.setLocation(location2);
+        address2.setState(state);
 
         Person person = new Person();
         person.setName("Dave");
         person.setEmail("dave@mail.com");
-        person.setCars(Arrays.asList(new Car[] { car1, car2 }));
+        person.setAddresses(Arrays.asList(new Address[] { address1, address2 }));
         repository.save(person);
 
         Document document = mongoOperations.getCollection("people").find().iterator().next();
-        assertNull(document.get("cars"));
+
         Document obj = new Document();
-        obj.put("_id", car1.getId());
-        obj.put(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME, "car");
-        assertTrue(((Collection<?>) document.get("carsrefs")).size() == 2);
-        assertTrue(((Collection<?>) document.get("carsrefs")).contains(obj));
+        obj.put("_id", address1.getId());
+        obj.put(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME, "addresses");
+        assertEquals(2, ((Collection<?>) document.get("addresses")).size());
+        assertTrue(((Collection<?>) document.get("addresses")).contains(obj));
 
-        FindIterable<Document> cars = mongoOperations.getCollection("car").find();
-        AtomicInteger count = new AtomicInteger(0);
-        AtomicReference<List<Document>> carsDocuments = new AtomicReference<>(new ArrayList<>());
-        Consumer<Document> filter = new Consumer<Document>() {
+        Iterator<Document> addresses = mongoOperations.getCollection("addresses").find().iterator();
 
-            @Override
-            public void accept(Document t) {
-                count.incrementAndGet();
-                carsDocuments.get().add(t);
-            }
-        };
-        cars.forEach(filter);
-        assertTrue(count.get() == 2);
-        assertTrue(carsDocuments.get().stream().map((item) -> {
-            return item.get("_id");
-        }).collect(Collectors.toList()).contains(car1.getId()));
+        List<String> addressesList = new ArrayList<>();
+        addressesList.add(addresses.next().getString("location"));
+        addressesList.add(addresses.next().getString("location"));
+        assertFalse(addresses.hasNext());
+        assertTrue(addressesList.contains(location1));
+        assertTrue(addressesList.contains(location2));
 
+        Iterator<Document> stateIterator = mongoOperations.getCollection("states").find().iterator();
+        assertEquals(stateId, stateIterator.next().get("_id"));
+        assertFalse(stateIterator.hasNext());
     }
 
     @Test
-    public void shouldCascadeRemoveCollection() {
+    public void shouldCascadeRemoveMultiLevel() {
         Car car1 = new Car(1);
         car1.setColor(Color.BLUE);
         car1.setManufacturer("BMW");
@@ -127,18 +116,41 @@ public class CascadingTest extends AbstractBaseTest {
         Car car2 = new Car(2);
         car2.setColor(Color.BLUE);
         car2.setManufacturer("BMW");
+
+        State state1 = new State();
+        String drivingLicenseId1 = "ZZ12345";
+        state1.setName("El Goussa");
+        DrivingLicense drivingLicense1 = new DrivingLicense(drivingLicenseId1);
+        drivingLicense1.setNumber("12345");
+        drivingLicense1.setState(state1);
+
+        State state2 = new State();
+        String drivingLicenseId2 = "YY12345";
+        state2.setName("El Goussa");
+        DrivingLicense drivingLicense2 = new DrivingLicense(drivingLicenseId2);
+        drivingLicense2.setNumber("12345");
+        drivingLicense2.setState(state2);
 
         Person person1 = new Person();
         person1.setName("Kais");
         person1.setEmail("kais.omri.int@gmail.com");
         person1.setCars(Arrays.asList(new Car[] { car1 }));
+        person1.setDrivingLicense(drivingLicense1);
         repository.save(person1);
 
         Person person2 = new Person();
         person2.setName("Dave");
         person2.setEmail("dave@mail.com");
         person2.setCars(Arrays.asList(new Car[] { car2 }));
+        person2.setDrivingLicense(drivingLicense2);
         repository.save(person2);
+
+        assertEquals(2, drivingLicenseRepository.findAll().size());
+
+        // 2 states
+        Iterator<Document> stateIterator = mongoOperations.getCollection("states").find().iterator();
+        assertNotNull(stateIterator.next());
+        assertTrue(stateIterator.hasNext());
 
         repository.delete(person2);
 
@@ -152,9 +164,13 @@ public class CascadingTest extends AbstractBaseTest {
             }
         };
         cars.forEach(filter);
-        assertTrue(carsDocuments.get().size() == 1);
-
-        assertTrue(carsDocuments.get().get(0).get("_id").equals(car1.getId()));
+        assertEquals(1, carsDocuments.get().size());
+        assertEquals(carsDocuments.get().get(0).get("_id"), car1.getId());
+        assertEquals(1, drivingLicenseRepository.findAll().size());
+        // it remains one state
+        stateIterator = mongoOperations.getCollection("states").find().iterator();
+        assertNotNull(stateIterator.next());
+        assertFalse(stateIterator.hasNext());
 
     }
 

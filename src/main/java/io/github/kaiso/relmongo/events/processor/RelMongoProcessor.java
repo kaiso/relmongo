@@ -18,12 +18,9 @@ package io.github.kaiso.relmongo.events.processor;
 
 import io.github.kaiso.relmongo.events.callback.PersistentPropertyCascadingRemoveCallback;
 import io.github.kaiso.relmongo.events.callback.PersistentPropertyConvertingCallback;
-import io.github.kaiso.relmongo.events.callback.PersistentPropertyLoadingCallback;
 import io.github.kaiso.relmongo.events.callback.PersistentPropertyPostLoadingCallback;
 import io.github.kaiso.relmongo.events.callback.PersistentPropertyPostSavingCallback;
 import io.github.kaiso.relmongo.events.callback.PersistentPropertySavingCallback;
-import io.github.kaiso.relmongo.model.LoadableObjectsMetadata;
-import io.github.kaiso.relmongo.mongo.PersistentRelationResolver;
 
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -36,8 +33,6 @@ import org.springframework.data.mongodb.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.data.mongodb.core.mapping.event.BeforeSaveEvent;
 import org.springframework.util.ReflectionUtils;
 
-import java.util.List;
-
 /**
  * 
  * @author Kais OMRI
@@ -46,7 +41,7 @@ import java.util.List;
 public class RelMongoProcessor extends AbstractMongoEventListener<Object> {
 
     private MongoOperations mongoOperations;
-    
+
     public RelMongoProcessor(MongoOperations mongoOperations) {
         super();
         this.mongoOperations = mongoOperations;
@@ -54,14 +49,14 @@ public class RelMongoProcessor extends AbstractMongoEventListener<Object> {
 
     @Override
     public void onAfterLoad(AfterLoadEvent<Object> event) {
-        if (event.getType().isAnnotationPresent(Document.class)) {
-            PersistentPropertyLoadingCallback callback = new PersistentPropertyLoadingCallback(event.getSource());
-            ReflectionUtils.doWithFields(event.getType(), callback);
-            List<LoadableObjectsMetadata> loadableObjects = callback.getLoadableObjects();
-            if (!loadableObjects.isEmpty()) {
-                PersistentRelationResolver.resolveOnLoading(mongoOperations, loadableObjects, event.getSource());
-            }
-        }
+//        if (event.getType().isAnnotationPresent(Document.class)) {
+//            PersistentPropertyLoadingCallback callback = new PersistentPropertyLoadingCallback(event.getSource());
+//            ReflectionUtils.doWithFields(event.getType(), callback);
+//            List<LoadableObjectsMetadata> loadableObjects = callback.getLoadableObjects();
+//            if (!loadableObjects.isEmpty()) {
+//                PersistentRelationResolver.resolveOnLoading(mongoOperations, loadableObjects, event.getSource());
+//            }
+//        }
         super.onAfterLoad(event);
     }
 
@@ -96,8 +91,9 @@ public class RelMongoProcessor extends AbstractMongoEventListener<Object> {
     public void onAfterSave(AfterSaveEvent<Object> event) {
         super.onAfterSave(event);
         if (event.getSource().getClass().isAnnotationPresent(Document.class)) {
-            PersistentPropertyPostSavingCallback callback = new PersistentPropertyPostSavingCallback(event.getSource(), mongoOperations);
-            ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
+            new PersistentPropertyPostSavingCallback(event.getSource(), event.getSource().getClass(), mongoOperations)
+                .apply();
+
         }
 
     }
@@ -105,9 +101,9 @@ public class RelMongoProcessor extends AbstractMongoEventListener<Object> {
     @Override
     public void onBeforeDelete(BeforeDeleteEvent<Object> event) {
         super.onBeforeDelete(event);
-        if (event.getType().isAnnotationPresent(Document.class)) {
+        if (event.getType().isAnnotationPresent(Document.class) && !event.getSource().isEmpty()) {
             PersistentPropertyCascadingRemoveCallback callback = new PersistentPropertyCascadingRemoveCallback(event.getDocument(), mongoOperations,
-                    event.getType());
+                event.getType(), event.getCollectionName());
             callback.doProcessing();
         }
     }

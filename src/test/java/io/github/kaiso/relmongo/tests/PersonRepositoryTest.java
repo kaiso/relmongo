@@ -6,6 +6,7 @@ import io.github.kaiso.relmongo.data.model.DrivingLicense;
 import io.github.kaiso.relmongo.data.model.House;
 import io.github.kaiso.relmongo.data.model.Passport;
 import io.github.kaiso.relmongo.data.model.Person;
+import io.github.kaiso.relmongo.data.model.State;
 import io.github.kaiso.relmongo.data.repository.CarRepository;
 import io.github.kaiso.relmongo.data.repository.DrivingLicenseRepository;
 import io.github.kaiso.relmongo.data.repository.HouseRepository;
@@ -136,43 +137,77 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         Optional<Person> retreivedPerson = repository.findById(person.getId().toString());
         assertNotNull(retreivedPerson.get().getPassport());
         assertEquals(retreivedPerson.get().getPassport().getNumber(), "12345");
-        // mappedBy
-        assertEquals(retreivedPerson.get().getPassport().getOwner().getId(), retreivedPerson.get().getId());
+    }
+
+    @Test
+    public void shouldKeepOnlyRelMongoReferencesIfParentContainsCopy() {
+        Passport passport = new Passport();
+        passport.setNumber("12345");
+        passportRepository.save(passport);
+        // remove number before we store a copy in person document
+        passport.setNumber("88888");
+        Person person = new Person();
+        person.setName("Dave");
+        person.setEmail("dave@mail.com");
+        person.setPassport(passport);
+        Document obj = (Document) mongoOperations.getConverter().convertToMongoType(person);
+
+        mongoOperations.getCollection("people").insertOne(obj);
+
+        Person retreivedPerson = repository.findAll().get(0);
+        assertNotNull(retreivedPerson.getPassport());
+        assertEquals(retreivedPerson.getPassport().getNumber(), "88888");
+
+        person.setId(retreivedPerson.getId());
+        repository.save(person);
+
+        retreivedPerson = repository.findAll().get(0);
+        assertNotNull(retreivedPerson.getPassport());
+        assertEquals(retreivedPerson.getPassport().getNumber(), "12345");
 
     }
 
     @Test
-    public void shouldFetchOneToManyRelation() {
+    public void shouldFetchOneToManyRelationMultiLevel() {
+        State state1 = new State();
+        state1.setName("Paris");
         Car car = new Car(1);
         car.setColor(Color.BLUE);
         String manufacturer = "BMW";
         car.setManufacturer(manufacturer);
-        // carRepository.save(car);
+        car.setLocation(state1);
 
+        State state2 = new State();
+        state2.setName("El Goussa");
         Car car1 = new Car(2);
         car1.setColor(Color.RED);
         String manufacturer1 = "JAGUAR";
         car1.setManufacturer(manufacturer1);
-        // carRepository.save(car1);
+        car1.setLocation(state2);
 
         Person person = new Person();
         person.setName("Dave");
         person.setEmail("dave@mail.com");
         person.setCars(Arrays.asList(new Car[] { car, car1 }));
         repository.save(person);
+
         Optional<Person> retreivedPerson = repository.findById(person.getId().toString());
         System.out.println(retreivedPerson.get());
         assertFalse(retreivedPerson.get().getCars().isEmpty());
-        assertTrue(retreivedPerson.get().getCars().get(0).getColor().equals(Color.BLUE));
-        assertTrue(retreivedPerson.get().getCars().get(0).getManufacturer().equals(manufacturer));
-        // mappedBy
-        assertEquals(retreivedPerson.get().getCars().get(0).getOwner().getId(), retreivedPerson.get().getId());
+        assertEquals(Color.BLUE, retreivedPerson.get().getCars().get(0).getColor());
+        assertEquals(manufacturer, retreivedPerson.get().getCars().get(0).getManufacturer());
+        assertEquals(state1.getName(), retreivedPerson.get().getCars().get(0).getLocation().getName());
+        
     }
 
     @Test
-    public void shouldLazyLoadCollection() {
+    public void shouldLazyLoadCollectionMultiLevel() {
+        State state = new State();
+        String location = "Paris 8";
+        state.setName(location);
         House house = new House("H4");
-        house.setAddress("Paris");
+        house.setAddress("Opera");
+        house.setState(state);
         houseRepository.save(house);
         Person person = new Person();
         person.setName("Dave");
@@ -182,16 +217,19 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         Optional<Person> retreivedPerson = repository.findById(person.getId().toString());
         System.out.println(retreivedPerson.get());
         assertFalse(retreivedPerson.get().getHouses().isEmpty());
-        assertTrue(retreivedPerson.get().getHouses().get(0).getAddress().equals("Paris"));
+        assertEquals("Opera", retreivedPerson.get().getHouses().get(0).getAddress());
+        assertEquals(location, retreivedPerson.get().getHouses().get(0).getState().getName());
         assertTrue(retreivedPerson.get().getHouses() instanceof LazyLoadingProxy);
-        // mappedBy
-        assertEquals(retreivedPerson.get().getHouses().get(0).getOwner().getId(), retreivedPerson.get().getId());
+       
     }
 
     @Test
-    public void shouldLazyLoadObject() {
+    public void shouldLazyLoadMultiLevel() {
+        State state = new State();
+        state.setName("Paris");
         DrivingLicense drivingLicense = new DrivingLicense("ZUY0001");
         drivingLicense.setNumber("12345");
+        drivingLicense.setState(state);
         drivingLicenseRepository.save(drivingLicense);
         Person person = new Person();
         person.setName("Dave");
@@ -200,7 +238,8 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         repository.save(person);
         Optional<Person> retreivedPerson = repository.findById(person.getId().toString());
         assertNotNull(retreivedPerson.get().getDrivingLicense());
-        assertEquals(retreivedPerson.get().getDrivingLicense().getNumber(), "12345");
+        assertEquals("12345", retreivedPerson.get().getDrivingLicense().getNumber());
+        assertEquals("Paris", retreivedPerson.get().getDrivingLicense().getState().getName());
         assertTrue(retreivedPerson.get().getDrivingLicense() instanceof LazyLoadingProxy);
     }
 

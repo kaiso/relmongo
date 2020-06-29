@@ -27,6 +27,8 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * 
@@ -37,11 +39,19 @@ public class PersistentPropertyPostSavingCallback implements FieldCallback {
 
     private Object source;
     private MongoOperations mongoOperations;
+    private Class<?> sourceClass;
+    private Set<Object> cache = new HashSet<>();
 
-    public PersistentPropertyPostSavingCallback(Object source, MongoOperations mongoOperations) {
+    public PersistentPropertyPostSavingCallback(Object source, Class<?> sourceClass, MongoOperations mongoOperations) {
         super();
         this.source = source;
         this.mongoOperations = mongoOperations;
+        this.sourceClass = sourceClass;
+    }
+
+    public void apply() {
+        ReflectionUtils.doWithFields(sourceClass, this);
+        cache.stream().forEach(mongoOperations::save);
     }
 
     public void doWith(Field field) throws IllegalAccessException {
@@ -71,13 +81,13 @@ public class PersistentPropertyPostSavingCallback implements FieldCallback {
 
     private void cascadeItem(CascadeType cascadeType, Object child) {
         if (Arrays.asList(CascadeType.PERSIST, CascadeType.ALL).contains(cascadeType)) {
-            mongoOperations.save(child);
+            cache.add(child);
         }
     }
 
     private void cascadeCollection(CascadeType cascadeType, Collection<?> child) {
         if (Arrays.asList(CascadeType.PERSIST, CascadeType.ALL).contains(cascadeType)) {
-            child.parallelStream().forEach(mongoOperations::save);
+            cache.addAll(child);
         }
     }
 

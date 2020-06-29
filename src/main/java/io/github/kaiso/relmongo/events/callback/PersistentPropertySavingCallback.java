@@ -64,7 +64,7 @@ public class PersistentPropertySavingCallback implements FieldCallback {
         if (field.isAnnotationPresent(OneToMany.class)) {
             saveAssociation(field, field.getAnnotation(OneToMany.class).cascade(), field.getAnnotation(OneToMany.class).orphanRemoval());
         } else if (field.isAnnotationPresent(OneToOne.class)
-                && StringUtils.isEmpty(field.getAnnotation(OneToOne.class).mappedBy())) {
+            && StringUtils.isEmpty(field.getAnnotation(OneToOne.class).mappedBy())) {
             saveAssociation(field, field.getAnnotation(OneToOne.class).cascade(), field.getAnnotation(OneToOne.class).orphanRemoval());
         }
 
@@ -78,25 +78,25 @@ public class PersistentPropertySavingCallback implements FieldCallback {
         if (reference instanceof BasicDBList) {
             BasicDBList list = new BasicDBList();
             list.addAll(((BasicDBList) reference).stream()
-                    .map(dbObject -> this.keepOnlyIdentifier(dbObject, childCollectionName, cascadeType))
-                    .collect(Collectors.toList()));
+                .map(dbObject -> this.keepOnlyIdentifier(dbObject, childCollectionName, cascadeType))
+                .collect(Collectors.toList()));
             ((org.bson.Document) source).remove(field.getName());
             ((org.bson.Document) source).put(name, list);
             if (Boolean.TRUE.equals(orphanRemoval)) {
-                removeOrphans((ObjectId) ((org.bson.Document) source).get("_id"),
-                        list.parallelStream().map(o -> (ObjectId) ((org.bson.Document) o).get("_id")).collect(Collectors.toList()),
-                        name,
-                        childCollectionName);
+                removeOrphans(((org.bson.Document) source).get("_id"),
+                    list.parallelStream().map(o -> (ObjectId) ((org.bson.Document) o).get("_id")).collect(Collectors.toList()),
+                    name,
+                    field);
             }
         } else if (reference instanceof org.bson.Document) {
             ((org.bson.Document) source).remove(field.getName());
             org.bson.Document child = this.keepOnlyIdentifier(reference, childCollectionName, cascadeType);
             ((org.bson.Document) source).put(name, child);
             if (Boolean.TRUE.equals(orphanRemoval)) {
-                removeOrphans((ObjectId) ((org.bson.Document) source).get("_id"), Arrays.asList(child.get("_id")), name, childCollectionName);
+                removeOrphans(((org.bson.Document) source).get("_id"), Arrays.asList(child.get("_id")), name, field);
             }
         } else if (reference == null && Boolean.TRUE.equals(orphanRemoval)) {
-            removeOrphans((ObjectId) ((org.bson.Document) source).get("_id"), Collections.emptyList(), name, childCollectionName);
+            removeOrphans(((org.bson.Document) source).get("_id"), Collections.emptyList(), name, field);
         }
 
     }
@@ -105,22 +105,23 @@ public class PersistentPropertySavingCallback implements FieldCallback {
         Object objectId = ((org.bson.Document) obj).get("_id");
         if (objectId == null && !Arrays.asList(CascadeType.PERSIST, CascadeType.ALL).contains(cascadeType)) {
             throw new RelMongoProcessingException(
-                    "ObjectId must not be null when persisting without cascade ALL or PERSIST ");
+                "ObjectId must not be null when persisting without cascade ALL or PERSIST ");
         }
         return new org.bson.Document().append("_id", objectId).append(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME,
-                collection);
+            collection);
     }
 
     private String getCollectionName(Field field) {
         String collection = ReflectionsUtil.getGenericType(field).getAnnotation(Document.class).collection();
-        if (collection == null || "".equals(collection)) {
+        if (StringUtils.isEmpty(collection)) {
             collection = ReflectionsUtil.getGenericType(field).getSimpleName().toLowerCase();
         }
         return collection;
     }
 
     @SuppressWarnings({ "unchecked" })
-    private void removeOrphans(ObjectId parentId, List<Object> child, String propertyName, String childCollectionName) {
+    private void removeOrphans(Object parentId, List<Object> child, String propertyName, Field field) {
+        Class<?> childClass = ReflectionsUtil.getGenericType(field);
         BasicDBList result = DatabaseOperations.getDocumentsById(mongoOperations, Arrays.asList(parentId), collectionName);
         if (result == null || result.isEmpty()) {
             return;
@@ -134,7 +135,7 @@ public class PersistentPropertySavingCallback implements FieldCallback {
                 ArrayList<org.bson.Document> childList = (ArrayList<org.bson.Document>) currentChild;
                 childList.removeIf(o -> child.contains(o.get("_id")));
                 objectsToRemove.addAll(childList.parallelStream().map(o -> (ObjectId) o.get("_id"))
-                        .collect(Collectors.toList()));
+                    .collect(Collectors.toList()));
             } else if (currentChild instanceof org.bson.Document) {
                 ObjectId currentChildId = (ObjectId) ((org.bson.Document) currentChild).get("_id");
                 if (child.isEmpty() || !currentChildId.equals(child.get(0))) {
@@ -144,7 +145,7 @@ public class PersistentPropertySavingCallback implements FieldCallback {
             }
 
             if (objectsToRemove != null && !objectsToRemove.isEmpty()) {
-                DatabaseOperations.removeObjectsByIds(mongoOperations, childCollectionName, objectsToRemove);
+                DatabaseOperations.removeObjectsByIds(mongoOperations, childClass, objectsToRemove);
             }
         }
     }
