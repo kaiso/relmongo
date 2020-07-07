@@ -22,8 +22,14 @@ Configutation:
           - ref: Console_Appender
  
       Logger:
-        - name: thing.pack.appender
-          level: debug
+        - name: io.github.kaiso
+          level: trace
           AppenderRef:
             - ref: Console_Appender
-              level: error       
+
+      Logger:
+        - name: io.github.kaiso.relmongo.config.RelMongoPersistentEntityIndexResolver
+          level: warn
+          AppenderRef:
+            - ref: Console_Appender
+       
