@@ -20,6 +20,9 @@ import io.github.kaiso.relmongo.annotation.CascadeType;
 import io.github.kaiso.relmongo.annotation.OneToMany;
 import io.github.kaiso.relmongo.annotation.OneToOne;
 import io.github.kaiso.relmongo.mongo.DatabaseOperations;
+import io.github.kaiso.relmongo.mongo.DocumentUtils;
+import io.github.kaiso.relmongo.util.AnnotationsUtils;
+import io.github.kaiso.relmongo.util.ReflectionsUtil;
 
 import org.bson.Document;
 import org.springframework.data.mongodb.core.MongoOperations;
@@ -29,6 +32,8 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
 /**
  * 
@@ -39,14 +44,16 @@ public class PersistentPropertyCascadingRemoveCallback implements FieldCallback 
 
     private Document source;
     private MongoOperations mongoOperations;
-    private Object entity;
+    // private Object entity;
     private Class<?> entityType;
+    private String collectionName;
 
-    public PersistentPropertyCascadingRemoveCallback(Document source, MongoOperations mongoOperations, Class<?> entityType) {
+    public PersistentPropertyCascadingRemoveCallback(Document source, MongoOperations mongoOperations, Class<?> entityType, String collectionName) {
         super();
         this.source = source;
         this.mongoOperations = mongoOperations;
         this.entityType = entityType;
+        this.collectionName = collectionName;
     }
 
     public void doWith(Field field) throws IllegalAccessException {
@@ -59,45 +66,38 @@ public class PersistentPropertyCascadingRemoveCallback implements FieldCallback 
 
     }
 
-    private void doCascade(Field field, CascadeType cascadeType) throws IllegalAccessException {
+    private void doCascade(Field field, CascadeType cascadeType) {
         if (!Arrays.asList(CascadeType.REMOVE, CascadeType.ALL).contains(cascadeType)) {
             return;
         }
-        Object child = field.get(entity);
+        Object child = this.source.get(AnnotationsUtils.getJoinProperty(field));
         if (child != null) {
             if (Collection.class.isAssignableFrom(child.getClass())) {
-                cascadeCollection((Collection<?>) child);
-
+                cascadeRemove(ReflectionsUtil.getGenericType(field), (Collection<?>) child);
             } else {
-                cascadeItem(child);
-
+                cascadeRemove(ReflectionsUtil.getGenericType(field), Collections.singletonList(child));
             }
         }
 
     }
 
-    private void cascadeItem(Object child) {
-        mongoOperations.remove(child);
-    }
-
-    private void cascadeCollection(Collection<?> child) {
-        child.parallelStream().forEach(mongoOperations::remove);
+    private void cascadeRemove(Class<?> entityClass, Collection<?> children) {
+        DatabaseOperations.removeObjectsByIds(mongoOperations, entityClass, children.stream()
+            .filter(p -> p instanceof Document)
+            .filter(p -> ((Document) p).get("_id") != null)
+            .map(DocumentUtils::mapIdentifier).collect(Collectors.toList()));
     }
 
     public void doProcessing() {
         loadEntity();
-        if (entity == null) {
-            return;
-        }
-        ReflectionUtils.doWithFields(entity.getClass(), this);
+        ReflectionUtils.doWithFields(entityType, this);
     }
 
     private void loadEntity() {
-        if (entity == null) {
+        if (!DocumentUtils.isLoaded(source)) {
             Object sourceId = this.source.get("_id");
             if (sourceId != null) {
-                Collection<?> findByIds = DatabaseOperations.findByIds(mongoOperations, entityType, sourceId);
-                this.entity = findByIds != null && !findByIds.isEmpty() ? findByIds.iterator().next() : null;
+                this.source = DatabaseOperations.getDocumentByPropertyValue(mongoOperations, sourceId, "_id", collectionName);
             }
         }
     }

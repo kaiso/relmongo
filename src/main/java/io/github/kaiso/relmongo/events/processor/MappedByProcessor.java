@@ -38,9 +38,10 @@ public final class MappedByProcessor {
     }
 
     public static void processChild(Object parent, Object value, Field targetField, Class<?> fieldType) {
+        ReflectionUtils.makeAccessible(targetField);
         ReflectionUtils.doWithFields(fieldType, new FieldCallback() {
             @Override
-            public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+            public void doWith(Field field) throws IllegalAccessException {
                 ReflectionUtils.makeAccessible(field);
                 if (!ReflectionsUtil.getGenericType(field).equals(parent.getClass())) {
                     return;
@@ -48,20 +49,20 @@ public final class MappedByProcessor {
 
                 MappedByMetadata mappedByInfos = AnnotationsUtils.getMappedByInfos(field);
 
+                Object target = targetField.get(parent);
                 if (mappedByInfos.getMappedByValue() != null && mappedByInfos.getMappedByValue().equals(targetField.getName())
-                        && targetField.get(parent) != null) {
+                    && target != null) {
                     if (Collection.class.isAssignableFrom(targetField.getType())) {
-                        ((Collection<?>) targetField.get(parent)).forEach(element -> {
+                        ((Collection<?>) target).forEach(element -> {
                             try {
-                                field.set(element, value);
-                            } catch (IllegalArgumentException | IllegalAccessException e) {
+                                ReflectionUtils.setField(field, element, value);
+                            } catch (IllegalArgumentException e) {
                                 throw new RelMongoProcessingException("unable to set mappedBy child object "
-                                        + e.getMessage());
+                                    + e.getMessage());
                             }
                         });
-
                     } else {
-                        field.set(targetField.get(parent), value);
+                        ReflectionUtils.setField(field, target, value);
                     }
                 }
             }

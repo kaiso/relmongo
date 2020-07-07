@@ -21,7 +21,6 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 
 import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -43,16 +42,14 @@ public final class DatabaseOperations {
         super();
     }
 
-    @SuppressWarnings({ "rawtypes" })
     public static BasicDBList getDocumentsById(MongoOperations mongoOperations, List<Object> ids, String collection) {
         Assert.notNull(ids, "Ids must not be null!");
         Assert.hasText(collection, "Collection must not be null or empty!");
         BasicDBObject query = new BasicDBObject("_id", new BasicDBObject("$in", ids));
         FindIterable<Document> result = mongoOperations.getCollection(collection).find(query);
         BasicDBList list = new BasicDBList();
-        for (Iterator iterator = result.iterator(); iterator.hasNext();) {
+        for (Iterator<?> iterator = result.iterator(); iterator.hasNext();) {
             list.add(iterator.next());
-
         }
         return list;
     }
@@ -72,19 +69,22 @@ public final class DatabaseOperations {
     }
 
     public static <T> T findByPropertyValue(MongoOperations mongoOperations, Class<T> clazz, String propertyName, Object value) {
-        BasicDBObject query = new BasicDBObject(propertyName, new BasicDBObject("$eq", value));
-        FindIterable<Document> result = mongoOperations.getCollection(mongoOperations.getCollectionName(clazz)).find(query).limit(1);
-        return result.iterator().hasNext() ? mongoOperations.getConverter().read(clazz,result.iterator().next()) : null;
+        Query findQuery = Query.query(Criteria.where(propertyName).is(value));
+        return mongoOperations.findOne(findQuery, clazz);
     }
 
-    public static void saveObjects(MongoOperations mongoOperations, Object obj) {
-        mongoOperations.save(obj);
-    }
+    public static void removeObjectsByIds(MongoOperations mongoOperations, Class<?> entityClass, Collection<?> objectsIds) {
+        if (objectsIds.isEmpty()) {
+            return;
+        }
 
-    public static void removeObjectsByIds(MongoOperations mongoOperations, String collectionName, List<ObjectId> objectsIds) {
-        Query query = new Query();
-        query.addCriteria(Criteria.where("_id").in(objectsIds));
-        mongoOperations.remove(query, collectionName);
+        objectsIds.stream()
+            .forEach(p -> mongoOperations
+                .remove(
+                    mongoOperations.getConverter()
+                        .read(entityClass, new Document().append("_id", p))
+                )
+            );
     }
 
 }

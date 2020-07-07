@@ -52,7 +52,7 @@ public class PersistentPropertyConvertingCallback implements FieldCallback {
         ReflectionUtils.makeAccessible(field);
 
         if (AnnotationsUtils.isMappedBy(field)) {
-            field.set(source, null);
+            ReflectionUtils.setField(field, source, null);
             return;
         }
 
@@ -89,13 +89,13 @@ public class PersistentPropertyConvertingCallback implements FieldCallback {
             Field idField = objectIdReaderCallback.getIdField();
             if (idField == null) {
                 throw new RelMongoConfigurationException("the Id field of class [" + obj.getClass()
-                        + "] must be annotated by @Id (org.springframework.data.annotation.Id)");
+                    + "] must be annotated by @Id (org.springframework.data.annotation.Id)");
             }
             if (idField.get(obj) == null) {
                 if (idField.getType().equals(ObjectId.class)) {
-                    idField.set(obj, ObjectId.get());
+                    ReflectionUtils.setField(idField, obj, ObjectId.get());
                 } else if (idField.getType().equals(String.class)) {
-                    idField.set(obj, ObjectId.get().toString());
+                    ReflectionUtils.setField(idField, obj, ObjectId.get().toString());
                 }
             }
 

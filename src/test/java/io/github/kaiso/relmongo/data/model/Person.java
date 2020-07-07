@@ -29,7 +29,7 @@ public class Person {
     @JoinProperty(name = "passport")
     private Passport passport;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinProperty(name = "drivingLicenseref")
     private DrivingLicense drivingLicense;
 

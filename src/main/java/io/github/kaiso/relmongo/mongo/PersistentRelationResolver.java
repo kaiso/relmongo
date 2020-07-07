@@ -27,6 +27,7 @@ import org.springframework.cglib.proxy.NoOp;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.objenesis.ObjenesisStd;
+import org.springframework.util.StringUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -43,7 +44,7 @@ public final class PersistentRelationResolver {
     public static void resolveOnLoading(MongoOperations mongoOperations, List<LoadableObjectsMetadata> loadableObjects, org.bson.Document document) {
         for (LoadableObjectsMetadata relation : loadableObjects) {
             String collection = relation.getTargetAssociationClass().getAnnotation(Document.class).collection();
-            if (collection == null || "".equals(collection)) {
+            if (StringUtils.isEmpty(collection)) {
                 collection = relation.getTargetAssociationClass().getSimpleName().toLowerCase();
             }
             if (FetchType.EAGER.equals(relation.getFetchType())) {

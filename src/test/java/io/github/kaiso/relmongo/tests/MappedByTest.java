@@ -66,6 +66,23 @@ public class MappedByTest extends AbstractBaseTest {
         assertEquals(result.get().getOwner().getId(), retreivedPerson.get().getId());
     }
     
+    @Test
+    public void shouldFetchManyToOneMappedBySecondLevel() {
+        Car car = new Car(0);
+        car.setColor(Color.BLUE);
+        String manufacturer = "BMW";
+        car.setManufacturer(manufacturer);
+        Person person = new Person();
+        person.setName("Dave");
+        person.setEmail("dave@mail.com");
+        person.setCars(Arrays.asList(new Car[] { car }));
+        repository.save(person);
+        Optional<Person> retreivedPerson = repository.findById(person.getId().toString());
+        assertFalse(retreivedPerson.get().getCars().isEmpty());
+        assertEquals(carRepository.findAll().get(0).getId(), retreivedPerson.get().getCars().get(0).getId());
+        assertEquals(retreivedPerson.get().getCars().get(0).getOwner().getId(), retreivedPerson.get().getId());
+    }
+    
     
     @Test
     public void shouldFetchLazyManyToOneMappedBy() {
@@ -101,6 +118,20 @@ public class MappedByTest extends AbstractBaseTest {
         passportRepository.save(retreivedPassport.get());
         retreivedPassport = passportRepository.findById(passport.getId().toString());
         assertEquals(person.getId(), retreivedPassport.get().getOwner().getId());
+    }
+    
+    @Test
+    public void shouldfetchOneToOneMappedBySecondLevel() {
+        Passport passport = new Passport();
+        passport.setNumber("12345");
+        passport = passportRepository.save(passport);
+        Person person = new Person();
+        person.setName("Dave");
+        person.setEmail("dave@mail.com");
+        person.setPassport(passport);
+        person = repository.save(person);
+        Optional<Person> retreivedPassport = repository.findById(person.getId().toString());
+        assertEquals(person.getId(), retreivedPassport.get().getPassport().getOwner().getId());
     }
 
     @Test

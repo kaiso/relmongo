@@ -17,7 +17,9 @@
 package io.github.kaiso.relmongo.events.callback;
 
 import io.github.kaiso.relmongo.annotation.FetchType;
+import io.github.kaiso.relmongo.annotation.ManyToOne;
 import io.github.kaiso.relmongo.annotation.OneToMany;
+import io.github.kaiso.relmongo.annotation.OneToOne;
 import io.github.kaiso.relmongo.events.processor.MappedByProcessor;
 import io.github.kaiso.relmongo.exception.RelMongoConfigurationException;
 import io.github.kaiso.relmongo.model.MappedByMetadata;
@@ -35,7 +37,11 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -48,16 +54,29 @@ public class PersistentPropertyPostLoadingCallback implements FieldCallback {
     private Object source;
     private MongoOperations mongoOperations;
     private Document document;
+    private static ConcurrentHashMap<UUID, Map<Object, Object>> cache = new ConcurrentHashMap<>();
+    private UUID executionId;
 
     public PersistentPropertyPostLoadingCallback(Object source, Document document, MongoOperations mongoOperations) {
         super();
         this.source = source;
         this.mongoOperations = mongoOperations;
         this.document = document;
+        this.executionId = UUID.randomUUID();
+        cache.put(executionId, new HashMap<>());
+    }
+
+    public void close() {
+        cache.remove(executionId);
     }
 
     public void doWith(Field field) throws IllegalAccessException {
         ReflectionUtils.makeAccessible(field);
+
+        if (!(field.isAnnotationPresent(OneToOne.class) || field.isAnnotationPresent(OneToMany.class) || field.isAnnotationPresent(ManyToOne.class))) {
+            return;
+        }
+
         Class<?> type = ReflectionsUtil.getGenericType(field);
 
         FetchType fetchType = AnnotationsUtils.getFetchType(field);
@@ -67,37 +86,45 @@ public class PersistentPropertyPostLoadingCallback implements FieldCallback {
             return;
         }
 
+        List<Object> identifierList = new ArrayList<>();
         MappedByMetadata mappedByInfos = AnnotationsUtils.getMappedByInfos(field);
 
-        if (FetchType.LAZY.equals(fetchType)) {
-            List<Object> identifierList = new ArrayList<>();
-            if (mappedByInfos.getMappedByValue() == null) {
-                String joinPropertyName = AnnotationsUtils.getJoinProperty(field);
-                if (field.isAnnotationPresent(OneToMany.class) && !Collection.class.isAssignableFrom(field.getType())) {
-                    throw new RelMongoConfigurationException("in @OneToMany, the field must be of type collection ");
-                }
-                Object relations = document.get(joinPropertyName);
-
-                if (relations == null || (relations instanceof Document && ((Document) relations).keySet().isEmpty())) {
-                    return;
-                }
-                if (relations instanceof Collection) {
-                    identifierList.addAll(((Collection<?>) relations).stream()
-                            .map(DocumentUtils::mapIdentifier).collect(Collectors.toList()));
-                } else {
-                    identifierList.add(DocumentUtils.mapIdentifier(relations));
-                }
-            } else {
-                identifierList.add(document.get("_id"));
+        if (mappedByInfos.getMappedByValue() == null) {
+            String joinPropertyName = AnnotationsUtils.getJoinProperty(field);
+            if (field.isAnnotationPresent(OneToMany.class) && !Collection.class.isAssignableFrom(field.getType())) {
+                throw new RelMongoConfigurationException("in @OneToMany, the field must be of type collection ");
             }
-            field.set(source, PersistentRelationResolver.lazyLoader(field.getType(), mongoOperations,
-                    identifierList, mappedByInfos.getMappedByJoinProperty(), type,
-                    field.get(source), source, field.getName()));
-        } else if (mappedByInfos.getMappedByValue() != null) {
-            field.set(source, DatabaseOperations.findByPropertyValue(mongoOperations, type,
-                    mappedByInfos.getMappedByJoinProperty() + "._id", document.getObjectId("_id")));
+            Object relations = document.get(joinPropertyName);
+
+            if (relations == null || (relations instanceof Document && ((Document) relations).keySet().isEmpty())
+                || (relations instanceof Collection && ((Collection<?>) relations).isEmpty())) {
+                return;
+            }
+            if (relations instanceof Collection) {
+                identifierList.addAll(((Collection<?>) relations).stream()
+                    .map(DocumentUtils::mapIdentifier).collect(Collectors.toList()));
+            } else {
+                identifierList.add(DocumentUtils.mapIdentifier(relations));
+            }
+        } else {
+            identifierList.add(DocumentUtils.mapIdentifier(document));
         }
 
+        if (FetchType.LAZY.equals(fetchType) || mappedByInfos.getMappedByValue() != null) {
+            // mappedBy fields are loaded only in lazy mode to avoid cycles in loading
+            ReflectionUtils.setField(field, source, PersistentRelationResolver.lazyLoader(field.getType(), mongoOperations,
+                identifierList, mappedByInfos.getMappedByJoinProperty(), type,
+                field.get(source), source, field.getName()));
+        } else if (FetchType.EAGER.equals(fetchType)) {
+            if (Collection.class.isAssignableFrom(field.getType())) {
+                ReflectionUtils.setField(field, source,
+                    DatabaseOperations.findByIds(mongoOperations, type, identifierList.toArray(new Object[identifierList.size()])));
+            } else {
+                ReflectionUtils.setField(field, source,
+                    DatabaseOperations.findByPropertyValue(mongoOperations, type, "_id", identifierList.get(0)));
+            }
+            MappedByProcessor.processChild(source, source, field, type);
+        }
     }
 
 }
