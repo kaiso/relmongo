@@ -44,7 +44,7 @@ public class ObjectIdReaderCallback implements FieldCallback {
             ReflectionUtils.makeAccessible(field);
             try {
                 Object value = field.get(source);
-                if (value instanceof String) {
+                if (value instanceof String || value instanceof Long) {
                     objectId = value;
                 } else {
                     objectId = (ObjectId) value;
@@ -53,7 +53,7 @@ public class ObjectIdReaderCallback implements FieldCallback {
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 throw new RelMongoConfigurationException("unable to access the @Id field", e);
             } catch (ClassCastException e) {
-                throw new RelMongoConfigurationException("the @Id field must be of type ObjectId or String", e);
+                throw new RelMongoConfigurationException("the @Id field must be of type ObjectId, String or Long", e);
             }
         }
 

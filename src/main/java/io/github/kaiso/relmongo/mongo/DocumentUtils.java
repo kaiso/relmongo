@@ -65,7 +65,13 @@ public final class DocumentUtils {
         if (id == null) {
             throw new RelMongoProcessingException("_id must not be null");
         }
-        return id instanceof ObjectId ? (ObjectId) id : (String) id;
+        if ( id instanceof String ) {
+            return (String) id;
+        } else if ( id instanceof Long ) {
+            return (Long) id;
+        } else {
+            return (ObjectId) id;
+        }
     }
 
 }
