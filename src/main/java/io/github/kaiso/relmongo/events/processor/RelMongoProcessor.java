@@ -63,7 +63,7 @@ public class RelMongoProcessor extends AbstractMongoEventListener<Object> {
     @Override
     public void onBeforeSave(BeforeSaveEvent<Object> event) {
         if (event.getSource().getClass().isAnnotationPresent(Document.class)) {
-            PersistentPropertySavingCallback callback = new PersistentPropertySavingCallback(event.getDocument(), event.getCollectionName(), mongoOperations);
+            PersistentPropertySavingCallback callback = new PersistentPropertySavingCallback(event.getDocument(), event.getSource(), event.getCollectionName(), mongoOperations);
             ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
         }
         super.onBeforeSave(event);

@@ -18,6 +18,7 @@ package io.github.kaiso.relmongo.events.callback;
 
 import io.github.kaiso.relmongo.annotation.FetchType;
 import io.github.kaiso.relmongo.annotation.ManyToOne;
+import io.github.kaiso.relmongo.annotation.Nested;
 import io.github.kaiso.relmongo.annotation.OneToMany;
 import io.github.kaiso.relmongo.annotation.OneToOne;
 import io.github.kaiso.relmongo.events.processor.MappedByProcessor;
@@ -73,6 +74,19 @@ public class PersistentPropertyPostLoadingCallback implements FieldCallback {
     public void doWith(Field field) throws IllegalAccessException {
         ReflectionUtils.makeAccessible(field);
 
+        if ( field.isAnnotationPresent(Nested.class) ) {
+            Object object = field.get(source);
+            if ( object != null ) {
+
+                Document nestedDocument = (Document) ((org.bson.Document) document).get(field.getName());
+                
+                PersistentPropertyPostLoadingCallback callback = new PersistentPropertyPostLoadingCallback(object, nestedDocument, mongoOperations);
+                ReflectionUtils.doWithFields(object.getClass(), callback);
+                
+            }
+            return;
+        }
+        
         if (!(field.isAnnotationPresent(OneToOne.class) || field.isAnnotationPresent(OneToMany.class) || field.isAnnotationPresent(ManyToOne.class))) {
             return;
         }

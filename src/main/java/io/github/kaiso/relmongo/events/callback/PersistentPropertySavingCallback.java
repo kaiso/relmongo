@@ -16,16 +16,12 @@
 
 package io.github.kaiso.relmongo.events.callback;
 
-import com.mongodb.BasicDBList;
-
-import io.github.kaiso.relmongo.annotation.CascadeType;
-import io.github.kaiso.relmongo.annotation.OneToMany;
-import io.github.kaiso.relmongo.annotation.OneToOne;
-import io.github.kaiso.relmongo.exception.RelMongoProcessingException;
-import io.github.kaiso.relmongo.mongo.DatabaseOperations;
-import io.github.kaiso.relmongo.util.AnnotationsUtils;
-import io.github.kaiso.relmongo.util.ReflectionsUtil;
-import io.github.kaiso.relmongo.util.RelMongoConstants;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.MongoOperations;
@@ -34,12 +30,17 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.util.StringUtils;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
+import com.mongodb.BasicDBList;
+
+import io.github.kaiso.relmongo.annotation.CascadeType;
+import io.github.kaiso.relmongo.annotation.Nested;
+import io.github.kaiso.relmongo.annotation.OneToMany;
+import io.github.kaiso.relmongo.annotation.OneToOne;
+import io.github.kaiso.relmongo.exception.RelMongoProcessingException;
+import io.github.kaiso.relmongo.mongo.DatabaseOperations;
+import io.github.kaiso.relmongo.util.AnnotationsUtils;
+import io.github.kaiso.relmongo.util.ReflectionsUtil;
+import io.github.kaiso.relmongo.util.RelMongoConstants;
 
 /**
  * 
@@ -48,17 +49,20 @@ import java.util.stream.Collectors;
  */
 public class PersistentPropertySavingCallback implements FieldCallback {
 
-    private Object source;
+    private Object sourceDocument;
+    private Object sourceObject;
     private MongoOperations mongoOperations;
     private String collectionName;
-
-    public PersistentPropertySavingCallback(Object source, String collectionName, MongoOperations mongoOperations) {
+    
+    public PersistentPropertySavingCallback(Object sourceDocument, Object sourceObject, String collectionName, MongoOperations mongoOperations) {
         super();
-        this.source = source;
+        this.sourceDocument = sourceDocument;
+        this.sourceObject = sourceObject;
         this.mongoOperations = mongoOperations;
         this.collectionName = collectionName;
     }
-
+    
+    
     public void doWith(Field field) throws IllegalAccessException {
         ReflectionUtils.makeAccessible(field);
         if (field.isAnnotationPresent(OneToMany.class)) {
@@ -66,37 +70,48 @@ public class PersistentPropertySavingCallback implements FieldCallback {
         } else if (field.isAnnotationPresent(OneToOne.class)
             && StringUtils.isEmpty(field.getAnnotation(OneToOne.class).mappedBy())) {
             saveAssociation(field, field.getAnnotation(OneToOne.class).cascade(), field.getAnnotation(OneToOne.class).orphanRemoval());
-        }
+        } else if ( field.isAnnotationPresent(Nested.class)) {
+            Object object = field.get(sourceObject);
+            if ( object != null ) {
 
+                String nestedCollectionName = object.getClass().getSimpleName().toLowerCase();
+
+                Object document = ((org.bson.Document) sourceDocument).get(field.getName());
+                
+                PersistentPropertySavingCallback callback = new PersistentPropertySavingCallback(document, object, nestedCollectionName, mongoOperations);
+                ReflectionUtils.doWithFields(object.getClass(), callback);
+                
+            }
+        }
     }
 
     private void saveAssociation(Field field, CascadeType cascadeType, Boolean orphanRemoval) {
         String name = AnnotationsUtils.getJoinProperty(field);
         Object reference = null;
-        reference = ((org.bson.Document) source).get(field.getName());
+        reference = ((org.bson.Document) sourceDocument).get(field.getName());
         String childCollectionName = getCollectionName(field);
         if (reference instanceof BasicDBList) {
             BasicDBList list = new BasicDBList();
             list.addAll(((BasicDBList) reference).stream()
                 .map(dbObject -> this.keepOnlyIdentifier(dbObject, childCollectionName, cascadeType))
                 .collect(Collectors.toList()));
-            ((org.bson.Document) source).remove(field.getName());
-            ((org.bson.Document) source).put(name, list);
+            ((org.bson.Document) sourceDocument).remove(field.getName());
+            ((org.bson.Document) sourceDocument).put(name, list);
             if (Boolean.TRUE.equals(orphanRemoval)) {
-                removeOrphans(((org.bson.Document) source).get("_id"),
+                removeOrphans(((org.bson.Document) sourceDocument).get("_id"),
                     list.parallelStream().map(o -> (ObjectId) ((org.bson.Document) o).get("_id")).collect(Collectors.toList()),
                     name,
                     field);
             }
         } else if (reference instanceof org.bson.Document) {
-            ((org.bson.Document) source).remove(field.getName());
+            ((org.bson.Document) sourceDocument).remove(field.getName());
             org.bson.Document child = this.keepOnlyIdentifier(reference, childCollectionName, cascadeType);
-            ((org.bson.Document) source).put(name, child);
+            ((org.bson.Document) sourceDocument).put(name, child);
             if (Boolean.TRUE.equals(orphanRemoval)) {
-                removeOrphans(((org.bson.Document) source).get("_id"), Arrays.asList(child.get("_id")), name, field);
+                removeOrphans(((org.bson.Document) sourceDocument).get("_id"), Arrays.asList(child.get("_id")), name, field);
             }
         } else if (reference == null && Boolean.TRUE.equals(orphanRemoval)) {
-            removeOrphans(((org.bson.Document) source).get("_id"), Collections.emptyList(), name, field);
+            removeOrphans(((org.bson.Document) sourceDocument).get("_id"), Collections.emptyList(), name, field);
         }
 
     }

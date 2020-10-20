@@ -17,6 +17,7 @@
 package io.github.kaiso.relmongo.events.callback;
 
 import io.github.kaiso.relmongo.annotation.CascadeType;
+import io.github.kaiso.relmongo.annotation.Nested;
 import io.github.kaiso.relmongo.annotation.OneToMany;
 import io.github.kaiso.relmongo.annotation.OneToOne;
 
@@ -60,8 +61,13 @@ public class PersistentPropertyPostSavingCallback implements FieldCallback {
             doProcessing(field, field.getAnnotation(OneToMany.class).cascade(), field.getAnnotation(OneToMany.class).orphanRemoval());
         } else if (field.isAnnotationPresent(OneToOne.class)) {
             doProcessing(field, field.getAnnotation(OneToOne.class).cascade(), field.getAnnotation(OneToOne.class).orphanRemoval());
+        } else if ( field.isAnnotationPresent(Nested.class)) {
+            Object object = field.get(source);
+            if ( object != null ) {
+                PersistentPropertyPostSavingCallback callback = new PersistentPropertyPostSavingCallback(object, object.getClass(), mongoOperations);
+                callback.apply();
+            }
         }
-
     }
 
     private void doProcessing(Field field, CascadeType cascadeType, boolean orphanRemoval) throws IllegalAccessException {

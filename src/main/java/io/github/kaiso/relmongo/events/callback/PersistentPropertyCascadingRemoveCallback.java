@@ -17,6 +17,7 @@
 package io.github.kaiso.relmongo.events.callback;
 
 import io.github.kaiso.relmongo.annotation.CascadeType;
+import io.github.kaiso.relmongo.annotation.Nested;
 import io.github.kaiso.relmongo.annotation.OneToMany;
 import io.github.kaiso.relmongo.annotation.OneToOne;
 import io.github.kaiso.relmongo.mongo.DatabaseOperations;
@@ -62,6 +63,20 @@ public class PersistentPropertyCascadingRemoveCallback implements FieldCallback 
             doCascade(field, field.getAnnotation(OneToMany.class).cascade());
         } else if (field.isAnnotationPresent(OneToOne.class)) {
             doCascade(field, field.getAnnotation(OneToOne.class).cascade());
+        } else if ( field.isAnnotationPresent(Nested.class)) {
+
+            Document childDocument = (Document) source.get(field.getName());
+            
+            if ( childDocument != null ) {
+                
+                Class<?> childEntityType = ReflectionsUtil.getGenericType(field);
+                
+                PersistentPropertyCascadingRemoveCallback callback = new PersistentPropertyCascadingRemoveCallback(childDocument, mongoOperations,
+                        childEntityType, collectionName);
+                    callback.doProcessing();
+            }
+            
+            
         }
 
     }

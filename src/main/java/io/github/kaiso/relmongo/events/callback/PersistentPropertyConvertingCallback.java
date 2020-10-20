@@ -17,6 +17,7 @@
 package io.github.kaiso.relmongo.events.callback;
 
 import io.github.kaiso.relmongo.annotation.CascadeType;
+import io.github.kaiso.relmongo.annotation.Nested;
 import io.github.kaiso.relmongo.annotation.OneToMany;
 import io.github.kaiso.relmongo.annotation.OneToOne;
 import io.github.kaiso.relmongo.events.processor.MappedByProcessor;
@@ -49,6 +50,7 @@ public class PersistentPropertyConvertingCallback implements FieldCallback {
     }
 
     public void doWith(Field field) throws IllegalAccessException {
+        
         ReflectionUtils.makeAccessible(field);
 
         if (AnnotationsUtils.isMappedBy(field)) {
@@ -62,8 +64,13 @@ public class PersistentPropertyConvertingCallback implements FieldCallback {
             fillIdentifiers(field, field.getAnnotation(OneToMany.class).cascade());
         } else if (field.isAnnotationPresent(OneToOne.class)) {
             fillIdentifiers(field, field.getAnnotation(OneToOne.class).cascade());
+        } else if ( field.isAnnotationPresent(Nested.class)) {
+            Object object = field.get(source);
+            if ( object != null ) {
+                PersistentPropertyConvertingCallback callback = new PersistentPropertyConvertingCallback(object);
+                ReflectionUtils.doWithFields(object.getClass(), callback);
+            }
         }
-
     }
 
     private void fillIdentifiers(Field field, CascadeType cascadeType) throws IllegalAccessException {
