@@ -15,15 +15,14 @@
 */
 package io.github.kaiso.relmongo.util;
 
-import io.github.kaiso.relmongo.exception.RelMongoConfigurationException;
+import java.lang.reflect.Field;
+import java.util.Optional;
 
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
-import java.lang.reflect.Field;
-import java.util.Optional;
+import io.github.kaiso.relmongo.exception.RelMongoConfigurationException;
 
 /**
  * @author Kais OMRI
@@ -40,23 +39,22 @@ public class ObjectIdReaderCallback implements FieldCallback {
 
     @Override
     public void doWith(Field field) throws IllegalAccessException {
-        if (field.isAnnotationPresent(Id.class)) {
+        if (field.isAnnotationPresent((Class) Id.class)) {
             ReflectionUtils.makeAccessible(field);
             try {
-                Object value = field.get(source);
-                if (value instanceof String || value instanceof Long) {
-                    objectId = value;
+                Object value = field.get(this.source);
+                if (value instanceof String) {
+                    this.objectId = value;
                 } else {
-                    objectId = (ObjectId) value;
+                    this.objectId = value;
                 }
                 this.idField = field;
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 throw new RelMongoConfigurationException("unable to access the @Id field", e);
             } catch (ClassCastException e) {
-                throw new RelMongoConfigurationException("the @Id field must be of type ObjectId, String or Long", e);
+                throw new RelMongoConfigurationException("the @Id field must be of type ObjectId or String", e);
             }
         }
-
     }
 
     public Optional<Object> getObjectId() {
