@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 
+ *
  * @author Kais OMRI
  *
  */
@@ -113,6 +113,9 @@ public class PersistentPropertySavingCallback implements FieldCallback {
 
     private String getCollectionName(Field field) {
         String collection = ReflectionsUtil.getGenericType(field).getAnnotation(Document.class).collection();
+        if (StringUtils.isEmpty(collection)) {
+            collection = ReflectionsUtil.getGenericType(field).getAnnotation(Document.class).value();
+        }
         if (StringUtils.isEmpty(collection)) {
             collection = ReflectionsUtil.getGenericType(field).getSimpleName().toLowerCase();
         }
