@@ -21,6 +21,7 @@ import io.github.kaiso.relmongo.annotation.OneToMany;
 import io.github.kaiso.relmongo.annotation.OneToOne;
 import io.github.kaiso.relmongo.events.processor.MappedByProcessor;
 import io.github.kaiso.relmongo.exception.RelMongoConfigurationException;
+import io.github.kaiso.relmongo.exception.RelMongoInvalidApiUsageException;
 import io.github.kaiso.relmongo.exception.RelMongoProcessingException;
 import io.github.kaiso.relmongo.util.AnnotationsUtils;
 import io.github.kaiso.relmongo.util.ObjectIdReaderCallback;
@@ -31,8 +32,10 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
 import java.lang.reflect.Field;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.UUID;
 
 /**
  * 
@@ -92,17 +95,31 @@ public class PersistentPropertyConvertingCallback implements FieldCallback {
                     + "] must be annotated by @Id (org.springframework.data.annotation.Id)");
             }
             if (idField.get(obj) == null) {
-                if (idField.getType().equals(ObjectId.class)) {
-                    ReflectionUtils.setField(idField, obj, ObjectId.get());
-                } else if (idField.getType().equals(String.class)) {
-                    ReflectionUtils.setField(idField, obj, ObjectId.get().toString());
-                }
+                ReflectionUtils.setField(idField, obj, generateId(idField));
             }
 
         } catch (IllegalArgumentException | IllegalAccessException e) {
             throw new RelMongoProcessingException(e);
         }
 
+    }
+
+    private Object generateId(Field idField) {
+        Object id;
+        if (idField.getType().equals(BigInteger.class)) {
+            id = new BigInteger(source.toString(), 16);
+        } else if (idField.getType().equals(ObjectId.class)) {
+            id = ObjectId.get();
+        } else if (idField.getType().equals(String.class)) {
+            id = ObjectId.get().toString();
+        } else if (idField.getType().equals(Long.class)) {
+            id = UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
+        } else {
+            throw new RelMongoInvalidApiUsageException(
+                String.format("Cannot autogenerate id of type %s for entity of type %s!", idField.getType(),
+                    idField.getDeclaringClass().getName()));
+        }
+        return id;
     }
 
 }

@@ -42,9 +42,8 @@ public class CascadingTest extends AbstractBaseTest {
     @Test
     public void shouldCascadeSaveOneToOneMultiLevel() {
         State state = new State();
-        String drivingLicenseId = "ZZ12345";
         state.setName("Paris");
-        DrivingLicense drivingLicense = new DrivingLicense(drivingLicenseId);
+        DrivingLicense drivingLicense = new DrivingLicense();
         drivingLicense.setNumber("12345");
         drivingLicense.setState(state);
 
@@ -56,7 +55,7 @@ public class CascadingTest extends AbstractBaseTest {
 
         Iterator<Document> iterator = mongoOperations.getCollection("drivingLicenses").find().iterator();
 
-        assertEquals(iterator.next().get("_id"), drivingLicenseId);
+        assertEquals(iterator.next().get("_id").toString(), drivingLicense.getId());
         assertFalse(iterator.hasNext());
         Document document = mongoOperations.getCollection("states").find().iterator().next();
         assertNotNull(document);
