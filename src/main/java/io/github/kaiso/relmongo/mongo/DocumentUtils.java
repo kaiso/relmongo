@@ -19,7 +19,6 @@ import io.github.kaiso.relmongo.exception.RelMongoProcessingException;
 import io.github.kaiso.relmongo.util.RelMongoConstants;
 
 import org.bson.Document;
-import org.bson.types.ObjectId;
 
 import java.util.Collection;
 
@@ -65,7 +64,7 @@ public final class DocumentUtils {
         if (id == null) {
             throw new RelMongoProcessingException("_id must not be null");
         }
-        return id instanceof ObjectId ? (ObjectId) id : (String) id;
+        return id;
     }
 
 }

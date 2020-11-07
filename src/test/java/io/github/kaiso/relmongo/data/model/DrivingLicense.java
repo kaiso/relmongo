@@ -8,7 +8,7 @@ import io.github.kaiso.relmongo.annotation.OneToOne;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "drivingLicenses")
+@Document("drivingLicenses")
 public class DrivingLicense {
 
     @Id

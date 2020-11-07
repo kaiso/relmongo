@@ -75,7 +75,7 @@ public class AuditingTest extends AbstractBaseTest {
 
     @Test
     public void shouldPopulateAuditingOnSave() {
-        Address address1 = new Address();
+        Address address1 = new Address(123l);
         address1.setLocation("1st street");
         addressRepository.save(address1);
         Consumer<Document> f = new Consumer<Document>() {

@@ -23,7 +23,9 @@ import io.github.kaiso.relmongo.annotation.OneToOne;
 import io.github.kaiso.relmongo.exception.RelMongoConfigurationException;
 import io.github.kaiso.relmongo.model.MappedByMetadata;
 
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -37,6 +39,17 @@ public class AnnotationsUtils {
 
     private AnnotationsUtils() {
         super();
+    }
+    
+    public static String getCollectionName(Field field) {
+        String collection = ReflectionsUtil.getGenericType(field).getAnnotation(Document.class).collection();
+        if (StringUtils.isEmpty(collection)) {
+            collection = ReflectionsUtil.getGenericType(field).getAnnotation(Document.class).value();
+        }
+        if (StringUtils.isEmpty(collection)) {
+            collection = ReflectionsUtil.getGenericType(field).getSimpleName().toLowerCase();
+        }
+        return collection;
     }
 
     public static String getJoinProperty(Field field) {

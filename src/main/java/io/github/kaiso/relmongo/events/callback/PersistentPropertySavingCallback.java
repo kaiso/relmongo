@@ -27,9 +27,7 @@ import io.github.kaiso.relmongo.util.AnnotationsUtils;
 import io.github.kaiso.relmongo.util.ReflectionsUtil;
 import io.github.kaiso.relmongo.util.RelMongoConstants;
 
-import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.util.StringUtils;
@@ -74,7 +72,7 @@ public class PersistentPropertySavingCallback implements FieldCallback {
         String name = AnnotationsUtils.getJoinProperty(field);
         Object reference = null;
         reference = ((org.bson.Document) source).get(field.getName());
-        String childCollectionName = getCollectionName(field);
+        String childCollectionName = AnnotationsUtils.getCollectionName(field);
         if (reference instanceof BasicDBList) {
             BasicDBList list = new BasicDBList();
             list.addAll(((BasicDBList) reference).stream()
@@ -84,7 +82,7 @@ public class PersistentPropertySavingCallback implements FieldCallback {
             ((org.bson.Document) source).put(name, list);
             if (Boolean.TRUE.equals(orphanRemoval)) {
                 removeOrphans(((org.bson.Document) source).get("_id"),
-                    list.parallelStream().map(o -> (ObjectId) ((org.bson.Document) o).get("_id")).collect(Collectors.toList()),
+                    list.parallelStream().map(o -> ((org.bson.Document) o).get("_id")).collect(Collectors.toList()),
                     name,
                     field);
             }
@@ -105,19 +103,12 @@ public class PersistentPropertySavingCallback implements FieldCallback {
         Object objectId = ((org.bson.Document) obj).get("_id");
         if (objectId == null && !Arrays.asList(CascadeType.PERSIST, CascadeType.ALL).contains(cascadeType)) {
             throw new RelMongoProcessingException(
-                "ObjectId must not be null when persisting without cascade ALL or PERSIST ");
+                "The entity Id must not be null when persisting without cascade ALL or PERSIST ");
         }
         return new org.bson.Document().append("_id", objectId).append(RelMongoConstants.RELMONGOTARGET_PROPERTY_NAME,
             collection);
     }
 
-    private String getCollectionName(Field field) {
-        String collection = ReflectionsUtil.getGenericType(field).getAnnotation(Document.class).collection();
-        if (StringUtils.isEmpty(collection)) {
-            collection = ReflectionsUtil.getGenericType(field).getSimpleName().toLowerCase();
-        }
-        return collection;
-    }
 
     @SuppressWarnings({ "unchecked" })
     private void removeOrphans(Object parentId, List<Object> child, String propertyName, Field field) {
@@ -129,15 +120,15 @@ public class PersistentPropertySavingCallback implements FieldCallback {
         org.bson.Document currentDocument = (org.bson.Document) result.get(0);
         if (currentDocument != null) {
             Object currentChild = currentDocument.get(propertyName);
-            List<ObjectId> objectsToRemove = null;
+            List<Object> objectsToRemove = null;
             if (currentChild instanceof ArrayList) {
                 objectsToRemove = new ArrayList<>();
                 ArrayList<org.bson.Document> childList = (ArrayList<org.bson.Document>) currentChild;
                 childList.removeIf(o -> child.contains(o.get("_id")));
-                objectsToRemove.addAll(childList.parallelStream().map(o -> (ObjectId) o.get("_id"))
+                objectsToRemove.addAll(childList.parallelStream().map(o -> o.get("_id"))
                     .collect(Collectors.toList()));
             } else if (currentChild instanceof org.bson.Document) {
-                ObjectId currentChildId = (ObjectId) ((org.bson.Document) currentChild).get("_id");
+                Object currentChildId = ((org.bson.Document) currentChild).get("_id");
                 if (child.isEmpty() || !currentChildId.equals(child.get(0))) {
                     objectsToRemove = new ArrayList<>();
                     objectsToRemove.add(currentChildId);

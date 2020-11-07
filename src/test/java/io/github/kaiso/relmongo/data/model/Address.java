@@ -6,7 +6,6 @@ import io.github.kaiso.relmongo.annotation.JoinProperty;
 import io.github.kaiso.relmongo.annotation.ManyToOne;
 import io.github.kaiso.relmongo.annotation.OneToOne;
 
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -17,7 +16,7 @@ import java.time.LocalDateTime;
 public class Address {
 
     @Id
-    private ObjectId id;
+    private Long id;
     private String location;
     
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -31,12 +30,24 @@ public class Address {
     private LocalDateTime lastModifiedDate;
     
     private LocalDateTime creationDate = LocalDateTime.now();
+    
+    
+    
 
-    public ObjectId getId() {
+    public Address() {
+        super();
+    }
+
+    public Address(Long id) {
+        super();
+        this.id = id;
+    }
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(ObjectId id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
