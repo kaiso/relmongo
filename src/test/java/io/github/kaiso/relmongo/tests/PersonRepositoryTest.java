@@ -230,7 +230,6 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         DrivingLicense drivingLicense = new DrivingLicense("ZUY0001");
         drivingLicense.setNumber("12345");
         drivingLicense.setState(state);
-        drivingLicenseRepository.save(drivingLicense);
         Person person = new Person();
         person.setName("Dave");
         person.setEmail("dave@mail.com");
@@ -241,6 +240,10 @@ public class PersonRepositoryTest extends AbstractBaseTest {
         assertEquals("12345", retreivedPerson.get().getDrivingLicense().getNumber());
         assertEquals("Paris", retreivedPerson.get().getDrivingLicense().getState().getName());
         assertTrue(retreivedPerson.get().getDrivingLicense() instanceof LazyLoadingProxy);
+        
+        // check that @Document("drivingLicenses") has been read
+        Document document = mongoOperations.getCollection("drivingLicenses").find().iterator().next();
+        assertEquals("12345", document.get("number"));
     }
 
     @Test
