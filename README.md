@@ -19,7 +19,7 @@ The RelMongo Java framework provides relationships mapping of MongoDB domain mod
  For documentation, wiki and examples please visit the project [home page](https://kaiso.github.io/relmongo/).
 # LICENSE
 
-   © Copyright 2020 Kais OMRI.
+   © Copyright 2021 Kais OMRI.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
