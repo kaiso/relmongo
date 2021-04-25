@@ -5,3 +5,5 @@ pom.xml.versionsBackup
 .settings/
 .sass-cache
 docs/robots.txt
+docs/src/_site
+docs/src/.ruby-version

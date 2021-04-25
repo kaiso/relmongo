@@ -1,5 +1,6 @@
 package io.github.kaiso.relmongo.tests.common;
 
+import io.github.kaiso.relmongo.config.MongoSpringConfiguration;
 import io.github.kaiso.relmongo.config.TestContextConfiguration;
 import io.github.kaiso.relmongo.data.model.Address;
 import io.github.kaiso.relmongo.data.model.Car;
@@ -17,7 +18,7 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@ContextConfiguration(classes = { TestContextConfiguration.class })
+@ContextConfiguration(classes = { TestContextConfiguration.class, MongoSpringConfiguration.class })
 @ExtendWith(SpringExtension.class)
 public abstract class AbstractBaseTest {
 
@@ -26,14 +27,14 @@ public abstract class AbstractBaseTest {
 
     @AfterEach
     public void afterEach() {
-         mongoOperations.remove(DrivingLicense.class).all();
-         mongoOperations.remove(Passport.class).all();
-         mongoOperations.remove(Person.class).all();
-         mongoOperations.remove(PersonDetails.class).all();
-         mongoOperations.remove(House.class).all();
-         mongoOperations.remove(Car.class).all();
-         mongoOperations.remove(State.class).all();
-         mongoOperations.remove(Address.class).all();
+        mongoOperations.remove(DrivingLicense.class).all();
+        mongoOperations.remove(Passport.class).all();
+        mongoOperations.remove(Person.class).all();
+        mongoOperations.remove(PersonDetails.class).all();
+        mongoOperations.remove(House.class).all();
+        mongoOperations.remove(Car.class).all();
+        mongoOperations.remove(State.class).all();
+        mongoOperations.remove(Address.class).all();
     }
 
 }

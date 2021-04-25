@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.MongoDbFactory;
@@ -39,6 +40,7 @@ public class TransactionsTest extends AbstractBaseTest {
         private PersonRepository repository;
 
         @Autowired
+        @Qualifier("mongoTemplate")
         private MongoOperations mongoOperations;
 
         public void before() {

@@ -20,20 +20,19 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Primary;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.convert.CustomConversions;
-import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
-import org.springframework.data.mongodb.config.EnableMongoAuditing;
+import org.springframework.data.mongodb.MongoDbFactory;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.SimpleMongoClientDbFactory;
 import org.springframework.data.mongodb.core.convert.DbRefResolver;
 import org.springframework.data.mongodb.core.convert.DefaultDbRefResolver;
 import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -47,14 +46,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-@EnableRelMongo
-@EnableMongoAuditing
-@EnableMongoRepositories(basePackages = { "io.github.kaiso.relmongo.data.repository.impl", "io.github.kaiso.relmongo.data.repository" })
-@ComponentScan(basePackages = { "io.github.kaiso.relmongo.tests" })
-public class TestContextConfiguration extends AbstractMongoClientConfiguration {
+public class TestContextConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(TestContextConfiguration.class);
 
@@ -79,11 +73,11 @@ public class TestContextConfiguration extends AbstractMongoClientConfiguration {
                     logger.info("Starting MongoDB process...");
                     IMongoCmdOptions cmdOptions = new MongoCmdOptionsBuilder().verbose(true).build();
                     _mongodExe = starter.prepare(new MongodConfigBuilder().version(Version.Main.PRODUCTION)
-                        .net(new Net("localhost", 55777, Network.localhostIsIPv6())).cmdOptions(cmdOptions ).build());
+                        .net(new Net("localhost", 55777, Network.localhostIsIPv6())).cmdOptions(cmdOptions).build());
                     _mongod = _mongodExe.start();
 
                     _mongo = MongoClients.create("mongodb://localhost:55777");
-                    
+
                     logger.info("MongoDB started");
                 }
             }
@@ -106,61 +100,62 @@ public class TestContextConfiguration extends AbstractMongoClientConfiguration {
     }
 
     @Bean
-    @Override
     public MongoClient mongoClient() {
         return _mongo;
     }
 
     @Bean
-    @Primary
-    //@Override
-    public RelMongoMappingContext customMappingContext() throws ClassNotFoundException {
+    public MongoMappingContext mongoMappingContext() throws ClassNotFoundException {
         RelMongoMappingContext context = new RelMongoMappingContext();
-        context.setInitialEntitySet(new EntityScanner(applicationContext)
-            .scan(Document.class, Persistent.class));
+        context.setInitialEntitySet(new RelMongoEntityScanner(applicationContext)
+            .scan(getMappingBasePackages(), Document.class, Persistent.class));
+
         context.setSimpleTypeHolder(customConversions().getSimpleTypeHolder());
-        context.afterPropertiesSet();
         return context;
     }
 
-    @Bean
-    @Primary
-    @Override
     public CustomConversions customConversions() {
         return new MongoCustomConversions(Collections.singletonList(new RMLocalDateTimeToDateConverter()));
     }
 
     @Bean
-    @Override
-    public MappingMongoConverter mappingMongoConverter() throws Exception {
+    public MappingMongoConverter mappingMongoConverter(MongoMappingContext mongoMappingContext) throws Exception {
         DbRefResolver dbRefResolver = new DefaultDbRefResolver(mongoDbFactory());
-        MappingMongoConverter converter = new MappingMongoConverter(dbRefResolver, customMappingContext());
+        MappingMongoConverter converter = new MappingMongoConverter(dbRefResolver, mongoMappingContext);
         converter.setCustomConversions(customConversions());
         converter.afterPropertiesSet();
         return converter;
     }
 
-    @Override
+    @Bean
+    public MongoDbFactory mongoDbFactory() {
+        return new SimpleMongoClientDbFactory(mongoClient(), getDatabaseName());
+    }
+
+    @Bean
+    public MongoTemplate mongoTemplate(MongoDbFactory mongoDbFactory, MappingMongoConverter mappingMongoConverter) throws Exception {
+        return new MongoTemplate(mongoDbFactory, mappingMongoConverter);
+    }
+
     public String getDatabaseName() {
         return "test";
     }
 
-    @Override
     public Collection<String> getMappingBasePackages() {
         return Collections.singleton("io.github.kaiso.relmongo.data");
     }
 
-    public class EntityScanner {
+    public static class RelMongoEntityScanner {
 
         private final ApplicationContext context;
 
         /**
-         * Create a new {@link EntityScanner} instance.
+         * Create a new {@link RelMongoEntityScanner} instance.
          * 
          * @param context
          *            the source application context
          */
-        public EntityScanner(ApplicationContext context) {
+        public RelMongoEntityScanner(ApplicationContext context) {
             Assert.notNull(context, "Context must not be null");
             this.context = context;
         }
@@ -175,9 +170,8 @@ public class TestContextConfiguration extends AbstractMongoClientConfiguration {
          *             if an entity class cannot be loaded
          */
         @SafeVarargs
-        public final Set<Class<?>> scan(Class<? extends Annotation>... annotationTypes)
+        public final Set<Class<?>> scan(Collection<String> packages, Class<? extends Annotation>... annotationTypes)
             throws ClassNotFoundException {
-            List<String> packages = getPackages();
             if (packages.isEmpty()) {
                 return Collections.emptySet();
             }
@@ -201,13 +195,9 @@ public class TestContextConfiguration extends AbstractMongoClientConfiguration {
             return entitySet;
         }
 
-        private List<String> getPackages() {
-            return Collections.singletonList("io.github.kaiso.relmongo.data");
-        }
-
     }
 
-    public class RMLocalDateTimeToDateConverter implements Converter<LocalDateTime, Date> {
+    public static class RMLocalDateTimeToDateConverter implements Converter<LocalDateTime, Date> {
         public Date convert(LocalDateTime source) {
             return Date.from(source.atZone(ZoneId.systemDefault()).toInstant());
         }
