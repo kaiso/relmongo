@@ -3,6 +3,7 @@
 source 'https://rubygems.org'
 #gems
 gem "jekyll-theme-architect"
+gem "kramdown-parser-gfm"
 group :jekyll_plugins do
     gem 'jekyll-sitemap'
 end

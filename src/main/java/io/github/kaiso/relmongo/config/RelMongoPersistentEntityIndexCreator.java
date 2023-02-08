@@ -4,23 +4,24 @@ import com.mongodb.MongoException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationListener;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.data.mapping.context.MappingContextEvent;
-import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.UncategorizedMongoDbException;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.IndexDefinition;
 import org.springframework.data.mongodb.core.index.IndexInfo;
 import org.springframework.data.mongodb.core.index.IndexOperations;
 import org.springframework.data.mongodb.core.index.IndexOperationsProvider;
 import org.springframework.data.mongodb.core.index.IndexResolver;
-import org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexCreator;
 import org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver.IndexDefinitionHolder;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.springframework.data.mongodb.core.mapping.MongoPersistentEntity;
+import org.springframework.data.mongodb.core.mapping.MongoPersistentProperty;
 import org.springframework.data.mongodb.util.MongoDbErrorCodes;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -45,9 +46,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Mark Paluch
  * @author kaiso
  */
-public class RelMongoPersistentEntityIndexCreator implements ApplicationListener<MappingContextEvent<?, ?>> {
+public class RelMongoPersistentEntityIndexCreator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RelMongoPersistentEntityIndexCreator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger("io.github.kaiso.relmongo.RelMongoIndexEngine");
+    private static final String LINE_SEPARATOR = System.lineSeparator();
 
     private final Map<Class<?>, Boolean> classesSeen = new ConcurrentHashMap<Class<?>, Boolean>();
     private final IndexOperationsProvider indexOperationsProvider;
@@ -55,28 +57,43 @@ public class RelMongoPersistentEntityIndexCreator implements ApplicationListener
     private final IndexResolver indexResolver;
 
     /**
-     * Creates a new {@link MongoPersistentEntityIndexCreator} for the given
-     * {@link MongoMappingContext} and
-     * {@link MongoDbFactory}.
+     * Creates a new {@link RelMongoPersistentEntityIndexCreator} for the given
+     * {@link MongoTemplate}
      *
-     * @param mappingContext must not be {@literal null}.
-     * @param indexOperationsProvider the mongoDbFactory must not be {@literal null}.
-     * @param indexResolver must not be {@literal null}.
+     * @param mongoTemplate
+     *            must not be {@literal null}.
      */
-    public RelMongoPersistentEntityIndexCreator(RelMongoMappingContext mappingContext,
-        IndexOperationsProvider indexOperationsProvider, IndexResolver indexResolver) {
+    public RelMongoPersistentEntityIndexCreator(MongoTemplate mongoTemplate) {
 
-        Assert.notNull(mappingContext, "MongoMappingContext must not be null!");
-        Assert.notNull(indexOperationsProvider, "IndexOperationsProvider must not be null!");
-        Assert.notNull(indexResolver, "IndexResolver must not be null!");
+        Assert.notNull(mongoTemplate, "MongoTemplate must not be null!");
 
-        this.indexOperationsProvider = indexOperationsProvider;
-        this.mappingContext = mappingContext;
-        this.indexResolver = indexResolver;
+        this.indexOperationsProvider = mongoTemplate;
 
-        for (MongoPersistentEntity<?> entity : mappingContext.getPersistentEntities()) {
-            checkForIndexes(entity);
+        MappingContext<? extends MongoPersistentEntity<?>, MongoPersistentProperty> mappingContext = mongoTemplate.getConverter().getMappingContext();
+        if (mappingContext instanceof RelMongoMappingContext) {
+            this.mappingContext = (RelMongoMappingContext) mappingContext;
+            this.indexResolver = new RelMongoPersistentEntityIndexResolver(this.mappingContext);
+            if (this.mappingContext.hasAutoIndexEnabled()) {
+                LOGGER.warn(
+                    "Index auto creation is deprecated and will be disabled by default in the next releases {} applications should manually set up indexes to avoid compatibility problems and performance issues",
+                    LINE_SEPARATOR);
+                ApplicationEventPublisher eventPublisher = new RelMongoMappingContextEventPublisher(this);
+                this.mappingContext.setApplicationEventPublisher(eventPublisher);
+                if (classesSeen.isEmpty()) {
+                    // the events were published before index creator was created
+                    this.mappingContext.getPersistentEntities().forEach(this::checkForIndexes);
+                }
+            }
+        } else {
+            if (mappingContext instanceof MongoMappingContext && ((MongoMappingContext) mappingContext).isAutoIndexCreation()) {
+                LOGGER.warn(
+                    "Index auto creation is enabled on defautl MongoMappingContext, this will cause index creation problems on associations {} Consider using io.github.kaiso.relmongo.config.RelMongoMappingContext instead of spring default MongoMappingContext or disable index auto creation",
+                    LINE_SEPARATOR);
+            }
+            this.mappingContext = null;
+            this.indexResolver = null;
         }
+
     }
 
     /*
@@ -87,7 +104,7 @@ public class RelMongoPersistentEntityIndexCreator implements ApplicationListener
      */
     public void onApplicationEvent(MappingContextEvent<?, ?> event) {
 
-        if (!event.wasEmittedBy(mappingContext)) {
+        if (mappingContext == null || !mappingContext.hasAutoIndexEnabled() || !event.wasEmittedBy(mappingContext)) {
             return;
         }
 
@@ -166,7 +183,8 @@ public class RelMongoPersistentEntityIndexCreator implements ApplicationListener
      * Returns whether the current index creator was registered for the given
      * {@link MappingContext}.
      *
-     * @param context the mapping context
+     * @param context
+     *            the mapping context
      * @return whether the creator is mapped to this context
      */
     public boolean isIndexCreatorFor(MappingContext<?, ?> context) {
@@ -199,4 +217,27 @@ public class RelMongoPersistentEntityIndexCreator implements ApplicationListener
 
         return null;
     }
+
+    class RelMongoMappingContextEventPublisher implements ApplicationEventPublisher {
+
+        private final RelMongoPersistentEntityIndexCreator indexCreator;
+
+        RelMongoMappingContextEventPublisher(RelMongoPersistentEntityIndexCreator indexCreator) {
+            this.indexCreator = indexCreator;
+        }
+
+        @Override
+        public void publishEvent(Object event) {
+            // do nothing
+
+        }
+
+        @SuppressWarnings("unchecked")
+        public void publishEvent(ApplicationEvent event) {
+            if (event instanceof MappingContextEvent) {
+                this.indexCreator.onApplicationEvent((MappingContextEvent<MongoPersistentEntity<?>, MongoPersistentProperty>) event);
+            }
+        }
+    };
+
 }

@@ -20,14 +20,18 @@ import io.github.kaiso.relmongo.annotation.OneToMany;
 import io.github.kaiso.relmongo.annotation.OneToOne;
 
 import org.springframework.context.annotation.Import;
+import org.springframework.data.mongodb.core.MongoTemplate;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
 /**
  * Enables the RelMongo framework processing.<br>
- * RelMongo allows to implement relations and associations between MongoDB collections <br>
+ * RelMongo allows to implement relations and associations between MongoDB
+ * collections <br>
+ * 
  * @see OneToMany
  * @see OneToOne
  * @author Kais OMRI
@@ -35,7 +39,14 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = { ElementType.TYPE })
-@Import(value = RelMongoConfiguration.class)
+@Import(value = RelMongoProcessorRegistrar.class)
 public @interface EnableRelMongo {
+    
+    /**
+     * Configures the name of the {@link MongoTemplate} bean to be used with RelMongo.
+     *
+     * @return
+     */
+    String mongoTemplateRef() default "mongoTemplate";
 
 }

@@ -16,22 +16,17 @@
 
 package io.github.kaiso.relmongo.mongo;
 
-import io.github.kaiso.relmongo.annotation.FetchType;
 import io.github.kaiso.relmongo.lazy.LazyLoadingProxy;
 import io.github.kaiso.relmongo.lazy.RelMongoLazyLoader;
-import io.github.kaiso.relmongo.model.LoadableObjectsMetadata;
 
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.cglib.proxy.Factory;
 import org.springframework.cglib.proxy.NoOp;
 import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.objenesis.ObjenesisStd;
-import org.springframework.util.StringUtils;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public final class PersistentRelationResolver {
 
@@ -41,34 +36,14 @@ public final class PersistentRelationResolver {
         super();
     }
 
-    public static void resolveOnLoading(MongoOperations mongoOperations, List<LoadableObjectsMetadata> loadableObjects, org.bson.Document document) {
-        for (LoadableObjectsMetadata relation : loadableObjects) {
-            String collection = relation.getTargetAssociationClass().getAnnotation(Document.class).collection();
-            if (StringUtils.isEmpty(collection)) {
-                collection = relation.getTargetAssociationClass().getSimpleName().toLowerCase();
-            }
-            if (FetchType.EAGER.equals(relation.getFetchType())) {
-                if (relation.getObjectIds() instanceof Collection) {
-                    List<Object> identifierList = ((Collection<?>) relation.getObjectIds()).stream().map(DocumentUtils::mapIdentifier)
-                            .collect(Collectors.toList());
-                    document.put(relation.getFieldName(), DatabaseOperations.getDocumentsById(mongoOperations, identifierList, collection));
-                } else if (relation.getObjectIds() instanceof org.bson.Document) {
-                    document.put(relation.getFieldName(), DatabaseOperations.getDocumentByPropertyValue(mongoOperations,
-                            DocumentUtils.mapIdentifier(relation.getObjectIds()), relation.getReferencedPropertyName(), collection));
-                }
-            }
-        }
-
-    }
-
     public static Object lazyLoader(Class<?> type, MongoOperations mongoOperations, List<Object> ids,
-            String property, Class<?> targetClass, Object original, Object parent, String fieldName) {
+        String property, Class<?> targetClass, Object original, Object parent, String fieldName) {
         Enhancer enhancer = new Enhancer();
         if (!Collection.class.isAssignableFrom(type)) {
             enhancer.setSuperclass(targetClass);
         }
         RelMongoLazyLoader lazyLoader = new RelMongoLazyLoader(ids, property, mongoOperations,
-                targetClass, type, fieldName, original, parent);
+            targetClass, type, fieldName, original, parent);
         enhancer.setCallback(lazyLoader);
         enhancer.setInterfaces(new Class[] { LazyLoadingProxy.class, type.isInterface() ? type : NoOp.class });
         enhancer.create();
