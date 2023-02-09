@@ -29,11 +29,11 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.data.annotation.Persistent;
-import org.springframework.data.mongodb.MongoDbFactory;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.SimpleMongoClientDbFactory;
+import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
 import org.springframework.data.mongodb.core.convert.DbRefResolver;
 import org.springframework.data.mongodb.core.convert.DefaultDbRefResolver;
 import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
@@ -78,7 +78,7 @@ public class MultipleMongoTemplateRefTest {
         @Bean
         public MongoTemplate secondMongoTemplate(MongoClient mongoClient, ApplicationContext applicationContext) throws Exception {
 
-            MongoDbFactory mongoDbFactory = new SimpleMongoClientDbFactory(mongoClient, "secondTest");
+            MongoDatabaseFactory mongoDbFactory = new SimpleMongoClientDatabaseFactory(mongoClient, "secondTest");
             DbRefResolver dbRefResolver = new DefaultDbRefResolver(mongoDbFactory);
             MongoCustomConversions conversions = new MongoCustomConversions(Collections.singletonList(new RMLocalDateTimeToDateConverter()));
 

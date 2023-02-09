@@ -1,14 +1,5 @@
 package io.github.kaiso.relmongo.tests;
 
-import io.github.kaiso.relmongo.data.model.Car;
-import io.github.kaiso.relmongo.data.model.DrivingLicense;
-import io.github.kaiso.relmongo.data.model.House;
-import io.github.kaiso.relmongo.data.model.Passport;
-import io.github.kaiso.relmongo.data.model.Person;
-import io.github.kaiso.relmongo.data.model.State;
-import io.github.kaiso.relmongo.data.repository.PersonRepository;
-import io.github.kaiso.relmongo.tests.common.AbstractBaseTest;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -17,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.mongodb.MongoDbFactory;
+import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.MongoTransactionException;
 import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.data.mongodb.core.MongoOperations;
@@ -26,6 +17,15 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import io.github.kaiso.relmongo.data.model.Car;
+import io.github.kaiso.relmongo.data.model.DrivingLicense;
+import io.github.kaiso.relmongo.data.model.House;
+import io.github.kaiso.relmongo.data.model.Passport;
+import io.github.kaiso.relmongo.data.model.Person;
+import io.github.kaiso.relmongo.data.model.State;
+import io.github.kaiso.relmongo.data.repository.PersonRepository;
+import io.github.kaiso.relmongo.tests.common.AbstractBaseTest;
 
 @ContextConfiguration(classes = { TransactionsTest.class })
 public class TransactionsTest extends AbstractBaseTest {
@@ -75,7 +75,7 @@ public class TransactionsTest extends AbstractBaseTest {
     public static class TransactionConfig {
 
         @Bean
-        MongoTransactionManager transactionManager(MongoDbFactory dbFactory) {
+        MongoTransactionManager transactionManager(MongoDatabaseFactory dbFactory) {
             return new MongoTransactionManager(dbFactory);
         }
 

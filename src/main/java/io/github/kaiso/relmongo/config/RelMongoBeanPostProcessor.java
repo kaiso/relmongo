@@ -1,6 +1,8 @@
 package io.github.kaiso.relmongo.config;
 
-import io.github.kaiso.relmongo.events.processor.RelMongoProcessor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanInitializationException;
@@ -9,69 +11,80 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.mapping.event.MongoMappingEvent;
 
-import java.lang.reflect.Field;
+import io.github.kaiso.relmongo.events.processor.RelMongoProcessor;
 
 public class RelMongoBeanPostProcessor implements BeanPostProcessor {
 
-    private final String mongoTemplateRef;
+	private final String mongoTemplateRef;
 
-    public RelMongoBeanPostProcessor(String mongoTemplateRef) {
-        super();
-        this.mongoTemplateRef = mongoTemplateRef;
-    }
+	public RelMongoBeanPostProcessor(String mongoTemplateRef) {
+		super();
+		this.mongoTemplateRef = mongoTemplateRef;
+	}
 
-    @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+	@Override
+	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 
-        if (bean instanceof MongoTemplate && beanName.equals(mongoTemplateRef)) {
+		if (bean instanceof MongoTemplate && beanName.equals(mongoTemplateRef)) {
 
-            /*
-             * Enhancer enhancer = new Enhancer();
-             * enhancer.setSuperclass(bean.getClass());
-             * enhancer.setCallbacks(new MethodInterceptor[] { new
-             * RelMongoTemplateInvocationHandler() });
-             * 
-             * Object proxy = enhancer.create(new Class<?>[] { MongoDbFactory.class,
-             * MongoConverter.class },
-             * new Object[] { ((MongoTemplate) bean).getMongoDbFactory(), ((MongoTemplate)
-             * bean).getConverter() });
-             * 
-             * ((MongoTemplate) proxy).setApplicationContext(applicationContext);
-             * 
-             * return proxy;
-             */
+			/*
+			 * Enhancer enhancer = new Enhancer(); enhancer.setSuperclass(bean.getClass());
+			 * enhancer.setCallbacks(new MethodInterceptor[] { new
+			 * RelMongoTemplateInvocationHandler() });
+			 * 
+			 * Object proxy = enhancer.create(new Class<?>[] { MongoDbFactory.class,
+			 * MongoConverter.class }, new Object[] { ((MongoTemplate)
+			 * bean).getMongoDbFactory(), ((MongoTemplate) bean).getConverter() });
+			 * 
+			 * ((MongoTemplate) proxy).setApplicationContext(applicationContext);
+			 * 
+			 * return proxy;
+			 */
 
-            try {
-                Field ep = MongoTemplate.class.getDeclaredField("eventPublisher");
-                ep.setAccessible(true);
-                ep.set(bean, new RelMongoEventPublisher((MongoTemplate) bean, (ApplicationEventPublisher) ep.get(bean)));
-            } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-                throw new BeanInitializationException("Fatal: failed to init the RelMongo Engine", e);
-            }
-        }
+			try {
+				Field ep = MongoTemplate.class.getDeclaredField("eventPublisher");
+				ep.setAccessible(true);
+				
+				RelMongoEventPublisher eventPublisher = new RelMongoEventPublisher((MongoTemplate) bean,
+						(ApplicationEventPublisher) ep.get(bean));
+				ep.set(bean, eventPublisher);
 
-        return bean;
-    }
+				Field edf = MongoTemplate.class.getDeclaredField("eventDelegate");
+				edf.setAccessible(true);
 
-    private static final class RelMongoEventPublisher implements ApplicationEventPublisher {
+				Object ed = edf.get(bean);
+				Method method = ed.getClass().getMethod("setPublisher", ApplicationEventPublisher.class);
+				method.setAccessible(true);
+				method.invoke(ed, eventPublisher);
 
-        private final RelMongoProcessor relMongoProcessor;
-        private final MongoTemplate mongoTemplate;
-        private final ApplicationEventPublisher eventPublisher;
+			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException
+					| InvocationTargetException | NoSuchMethodException e) {
+				throw new BeanInitializationException("Fatal: failed to init the RelMongo Engine", e);
+			}
+		}
 
-        public RelMongoEventPublisher(MongoTemplate mongoTemplate, ApplicationEventPublisher eventPublisher) {
-            super();
-            this.relMongoProcessor = new RelMongoProcessor();
-            this.mongoTemplate = mongoTemplate;
-            this.eventPublisher = eventPublisher;
-        }
+		return bean;
+	}
 
-        @Override
-        public void publishEvent(Object event) {
-            relMongoProcessor.onApplicationEvent((MongoMappingEvent<?>) event, mongoTemplate);
-            eventPublisher.publishEvent(event);
-        }
+	private static final class RelMongoEventPublisher implements ApplicationEventPublisher {
 
-    }
+		private final RelMongoProcessor relMongoProcessor;
+		private final MongoTemplate mongoTemplate;
+		private final ApplicationEventPublisher eventPublisher;
+
+		public RelMongoEventPublisher(MongoTemplate mongoTemplate, ApplicationEventPublisher eventPublisher) {
+			super();
+			this.relMongoProcessor = new RelMongoProcessor();
+			this.mongoTemplate = mongoTemplate;
+			this.eventPublisher = eventPublisher;
+		}
+
+		@Override
+		public void publishEvent(Object event) {
+			relMongoProcessor.onApplicationEvent((MongoMappingEvent<?>) event, mongoTemplate);
+			eventPublisher.publishEvent(event);
+		}
+
+	}
 
 }

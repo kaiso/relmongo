@@ -45,103 +45,104 @@ import org.springframework.util.ReflectionUtils;
  */
 public class RelMongoProcessor {
 
-    private static final Logger logger = LoggerFactory.getLogger(RelMongoProcessor.class);
+	private static final Logger logger = LoggerFactory.getLogger(RelMongoProcessor.class);
 
-    @SuppressWarnings("unchecked")
-    public void onApplicationEvent(MongoMappingEvent<?> event, MongoTemplate mongoTemplate) {
-        try {
+	@SuppressWarnings("unchecked")
+	public void onApplicationEvent(MongoMappingEvent<?> event, MongoTemplate mongoTemplate) {
+		try {
 
-            if (event instanceof AfterLoadEvent) {
+			if (event instanceof AfterLoadEvent) {
 
-                onAfterLoad((AfterLoadEvent<Object>) event, mongoTemplate);
+				onAfterLoad((AfterLoadEvent<Object>) event, mongoTemplate);
 
-                return;
-            }
+				return;
+			}
 
-            if (event instanceof AbstractDeleteEvent) {
+			if (event instanceof AbstractDeleteEvent) {
 
-                Class<?> eventDomainType = ((AbstractDeleteEvent<?>) event).getType();
+				Class<?> eventDomainType = ((AbstractDeleteEvent<?>) event).getType();
 
-                if (eventDomainType != null) {
-                    if (event instanceof BeforeDeleteEvent) {
-                        onBeforeDelete((BeforeDeleteEvent<Object>) event, mongoTemplate);
-                    }
-                    /*
-                     * if (event instanceof AfterDeleteEvent) {
-                     * onAfterDelete((AfterDeleteEvent<Object>) event);
-                     * }
-                     */
-                }
+				if (eventDomainType != null) {
+					if (event instanceof BeforeDeleteEvent) {
+						onBeforeDelete((BeforeDeleteEvent<Object>) event, mongoTemplate);
+					}
+					/*
+					 * if (event instanceof AfterDeleteEvent) {
+					 * onAfterDelete((AfterDeleteEvent<Object>) event); }
+					 */
+				}
 
-                return;
+				return;
 
-            }
+			}
 
-            if (event instanceof BeforeConvertEvent) {
-                onBeforeConvert((BeforeConvertEvent<Object>) event, mongoTemplate);
-            } else if (event instanceof BeforeSaveEvent) {
-                onBeforeSave((BeforeSaveEvent<Object>) event, mongoTemplate);
-            } else if (event instanceof AfterSaveEvent) {
-                onAfterSave((AfterSaveEvent<Object>) event, mongoTemplate);
-            } else if (event instanceof AfterConvertEvent) {
-                onAfterConvert((AfterConvertEvent<Object>) event, mongoTemplate);
-            }
+			if (event instanceof BeforeConvertEvent) {
+				onBeforeConvert((BeforeConvertEvent<Object>) event, mongoTemplate);
+			} else if (event instanceof BeforeSaveEvent) {
+				onBeforeSave((BeforeSaveEvent<Object>) event, mongoTemplate);
+			} else if (event instanceof AfterSaveEvent) {
+				onAfterSave((AfterSaveEvent<Object>) event, mongoTemplate);
+			} else if (event instanceof AfterConvertEvent) {
+				onAfterConvert((AfterConvertEvent<Object>) event, mongoTemplate);
+			}
 
-        } catch (Exception e) {
-            logger.warn("Failed to process MappingEvent " + event.getClass().getSimpleName(), e);
-        }
-    }
+		} catch (Exception e) {
+			logger.warn("Failed to process MappingEvent " + event.getClass().getSimpleName(), e);
+		}
+	}
 
-    public void onAfterLoad(AfterLoadEvent<Object> event, MongoTemplate template) {
-        // if (event.getType().isAnnotationPresent(Document.class)) {
-        // PersistentPropertyLoadingCallback callback = new
-        // PersistentPropertyLoadingCallback(event.getSource());
-        // ReflectionUtils.doWithFields(event.getType(), callback);
-        // List<LoadableObjectsMetadata> loadableObjects =
-        // callback.getLoadableObjects();
-        // if (!loadableObjects.isEmpty()) {
-        // PersistentRelationResolver.resolveOnLoading(mongoOperations, loadableObjects,
-        // event.getSource());
-        // }
-        // }
-    }
+	public void onAfterLoad(AfterLoadEvent<Object> event, MongoTemplate mongoTemplate) {
+		// if (event.getType().isAnnotationPresent(Document.class)) {
+		// PersistentPropertyLoadingCallback callback = new
+		// PersistentPropertyLoadingCallback(event.getSource());
+		// ReflectionUtils.doWithFields(event.getType(), callback);
+		// List<LoadableObjectsMetadata> loadableObjects =
+		// callback.getLoadableObjects();
+		// if (!loadableObjects.isEmpty()) {
+		// PersistentRelationResolver.resolveOnLoading(mongoOperations, loadableObjects,
+		// event.getSource());
+		// }
+		// }
+	}
 
-    public void onBeforeSave(BeforeSaveEvent<Object> event, MongoTemplate mongoTemplate) {
-        if (event.getSource().getClass().isAnnotationPresent(Document.class)) {
-            PersistentPropertySavingCallback callback = new PersistentPropertySavingCallback(event.getDocument(), event.getCollectionName(), mongoTemplate);
-            ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
-        }
-    }
+	public void onBeforeSave(BeforeSaveEvent<Object> event, MongoTemplate mongoTemplate) {
+		if (event.getSource().getClass().isAnnotationPresent(Document.class)) {
+			PersistentPropertySavingCallback callback = new PersistentPropertySavingCallback(event.getSource(),
+					event.getDocument(), event.getCollectionName(), mongoTemplate);
+			ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
+		}
+	}
 
-    public void onBeforeConvert(BeforeConvertEvent<Object> event, MongoTemplate mongoTemplate) {
-        if (event.getSource().getClass().isAnnotationPresent(Document.class)) {
-            PersistentPropertyConvertingCallback callback = new PersistentPropertyConvertingCallback(event.getSource());
-            ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
-        }
-    }
+	public void onBeforeConvert(BeforeConvertEvent<Object> event, MongoTemplate mongoTemplate) {
+		if (event.getSource().getClass().isAnnotationPresent(Document.class)) {
+			PersistentPropertyConvertingCallback callback = new PersistentPropertyConvertingCallback(event.getSource());
+			ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
+		}
+	}
 
-    public void onAfterConvert(AfterConvertEvent<Object> event, MongoTemplate mongoTemplate) {
-        if (event.getSource().getClass().isAnnotationPresent(Document.class)) {
-            PersistentPropertyPostLoadingCallback callback = new PersistentPropertyPostLoadingCallback(event.getSource(), event.getDocument(), mongoTemplate);
-            ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
-        }
-    }
+	public void onAfterConvert(AfterConvertEvent<Object> event, MongoTemplate mongoTemplate) {
+		if (event.getSource().getClass().isAnnotationPresent(Document.class)) {
+			PersistentPropertyPostLoadingCallback callback = new PersistentPropertyPostLoadingCallback(
+					event.getSource(), event.getDocument(), mongoTemplate);
+			ReflectionUtils.doWithFields(event.getSource().getClass(), callback);
+		}
+	}
 
-    public void onAfterSave(AfterSaveEvent<Object> event, MongoTemplate mongoTemplate) {
-        if (event.getSource().getClass().isAnnotationPresent(Document.class)) {
-            new PersistentPropertyPostSavingCallback(event.getSource(), event.getSource().getClass(), mongoTemplate)
-                .apply();
+	public void onAfterSave(AfterSaveEvent<Object> event, MongoTemplate mongoTemplate) {
+		if (event.getSource().getClass().isAnnotationPresent(Document.class)) {
+			new PersistentPropertyPostSavingCallback(event.getSource(), event.getSource().getClass(), mongoTemplate)
+					.apply();
 
-        }
+		}
 
-    }
+	}
 
-    public void onBeforeDelete(BeforeDeleteEvent<Object> event, MongoTemplate mongoTemplate) {
-        if (event.getType().isAnnotationPresent(Document.class) && !event.getSource().isEmpty()) {
-            PersistentPropertyCascadingRemoveCallback callback = new PersistentPropertyCascadingRemoveCallback(event.getDocument(), mongoTemplate,
-                event.getType(), event.getCollectionName());
-            callback.doProcessing();
-        }
-    }
+	public void onBeforeDelete(BeforeDeleteEvent<Object> event, MongoTemplate mongoTemplate) {
+		if (event.getType().isAnnotationPresent(Document.class) && !event.getSource().isEmpty()) {
+			PersistentPropertyCascadingRemoveCallback callback = new PersistentPropertyCascadingRemoveCallback(
+					event.getDocument(), mongoTemplate, event.getType(), event.getCollectionName());
+			callback.doProcessing();
+		}
+	}
 
 }

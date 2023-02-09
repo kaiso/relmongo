@@ -16,17 +16,18 @@
 
 package io.github.kaiso.relmongo.mongo;
 
-import io.github.kaiso.relmongo.lazy.LazyLoadingProxy;
-import io.github.kaiso.relmongo.lazy.RelMongoLazyLoader;
+import java.util.Collection;
+import java.util.List;
 
+import org.springframework.cglib.proxy.Callback;
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.cglib.proxy.Factory;
 import org.springframework.cglib.proxy.NoOp;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.objenesis.ObjenesisStd;
 
-import java.util.Collection;
-import java.util.List;
+import io.github.kaiso.relmongo.lazy.LazyLoadingProxy;
+import io.github.kaiso.relmongo.lazy.RelMongoLazyLoader;
 
 public final class PersistentRelationResolver {
 
@@ -44,11 +45,13 @@ public final class PersistentRelationResolver {
         }
         RelMongoLazyLoader lazyLoader = new RelMongoLazyLoader(ids, property, mongoOperations,
             targetClass, type, fieldName, original, parent);
-        enhancer.setCallback(lazyLoader);
+        
         enhancer.setInterfaces(new Class[] { LazyLoadingProxy.class, type.isInterface() ? type : NoOp.class });
-        enhancer.create();
+        enhancer.setAttemptLoad(true);
+        enhancer.setCallbackType(RelMongoLazyLoader.class);
         @SuppressWarnings("unchecked")
-        Factory factory = (Factory) objenesisStd.newInstance(enhancer.createClass());
+		Factory factory = (Factory) objenesisStd.newInstance(enhancer.createClass());
+        factory.setCallbacks(new Callback[] { lazyLoader });
         return factory.newInstance(lazyLoader);
     }
 
