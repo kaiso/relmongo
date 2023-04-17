@@ -19,7 +19,7 @@
 		<maven.plugin.source.version>3.0.1</maven.plugin.source.version>
 		<maven.plugin.javadoc.version>3.0.1</maven.plugin.javadoc.version>
 		<spring.data.version>2.2.6.RELEASE</spring.data.version>
-		<spring.version>5.2.5.RELEASE</spring.version>
+		<spring.version>5.2.24.RELEASE</spring.version>
 		<mongo.driver.version>3.11.2</mongo.driver.version>
 		<junit.jupiter.version>5.4.1</junit.jupiter.version>
 		<junit.platform.version>1.4.2</junit.platform.version>
