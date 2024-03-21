@@ -42,11 +42,11 @@ public final class MappedByProcessor {
         ReflectionUtils.doWithFields(fieldType, new FieldCallback() {
             @Override
             public void doWith(Field field) throws IllegalAccessException {
-                ReflectionUtils.makeAccessible(field);
                 if (!ReflectionsUtil.getGenericType(field).equals(parent.getClass())) {
                     return;
                 }
 
+                ReflectionUtils.makeAccessible(field);
                 MappedByMetadata mappedByInfos = AnnotationsUtils.getMappedByInfos(field);
 
                 Object target = targetField.get(parent);

@@ -59,13 +59,14 @@ public class PersistentPropertyConvertingCallback implements FieldCallback {
             return;
         }
 
-        MappedByProcessor.processChild(source, null, field, ReflectionsUtil.getGenericType(field));
 
         if (field.isAnnotationPresent(OneToMany.class)) {
             fillIdentifiers(field, field.getAnnotation(OneToMany.class).cascade());
         } else if (field.isAnnotationPresent(OneToOne.class)) {
             fillIdentifiers(field, field.getAnnotation(OneToOne.class).cascade());
         }
+        
+        MappedByProcessor.processChild(source, null, field, ReflectionsUtil.getGenericType(field));
 
     }
 

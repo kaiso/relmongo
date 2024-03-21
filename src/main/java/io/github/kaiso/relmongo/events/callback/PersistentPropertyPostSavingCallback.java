@@ -52,6 +52,7 @@ public class PersistentPropertyPostSavingCallback implements FieldCallback {
     public void apply() {
         ReflectionUtils.doWithFields(sourceClass, this);
         cache.stream().forEach(mongoOperations::save);
+        cache.clear();
     }
 
     public void doWith(Field field) throws IllegalAccessException {
